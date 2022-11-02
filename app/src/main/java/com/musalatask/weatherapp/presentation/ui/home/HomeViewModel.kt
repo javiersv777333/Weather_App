@@ -1,4 +1,4 @@
-package com.musalatask.weatherapp.ui.home
+package com.musalatask.weatherapp.presentation.ui.home
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

@@ -1,4 +1,4 @@
-package com.musalatask.weatherapp
+package com.musalatask.weatherapp.presentation
 
 import android.os.Bundle
 import android.view.Menu
@@ -12,10 +12,9 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import com.musalatask.weatherapp.R
 import com.musalatask.weatherapp.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -59,7 +58,21 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
-        return true
+        val menuItem = menu.findItem(R.id.action_search)
+        val searchView = menuItem.actionView as SearchView
+        searchView.queryHint = "Type a city name"
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                return true
+            }
+        })
+
+        return super.onCreateOptionsMenu(menu)
     }
 
     override fun onSupportNavigateUp(): Boolean {
