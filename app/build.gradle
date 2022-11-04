@@ -17,21 +17,21 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        def API_KEY_SECRET_NAME = "API_KEY"
+
+        //The api key is sensible data, and for that, must be stored and accessed securely,
+        // for example, it can be saved as a secret in a devops platform like Bitrise and
+        // obtained like the below code shows. As this is a test exercise the api key
+        // appears below but in a real context, this never can happen.
+        def environmentApiKey = System.getenv(API_KEY_SECRET_NAME) ?: "67ac02254a8e43696cbed2e9bcec067f"
+        buildConfigField("String", "API_KEY", "\"" + environmentApiKey + "\"")
     }
 
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-
-            def API_KEY_SECRET_NAME = "API_KEY"
-
-            //The api key is sensible data, and for that, must be stored and accessed securely,
-            // for example, it can be saved as a secret in a devops platform like Bitrise and
-            // obtained like the below code shows. As this is a test exercise the api key
-            // appears below but in a real context, this never can happen.
-            def environmentApiKey = System.getenv(API_KEY_SECRET_NAME) ?: "67ac02254a8e43696cbed2e9bcec067f"
-            buildConfigField("String", "API_KEY", "\"" + environmentApiKey + "\"")
         }
     }
     compileOptions {
@@ -72,6 +72,9 @@ dependencies {
     //Hilt
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+
+    //Joda Time
+    implementation "joda-time:joda-time:2.10.10"
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
