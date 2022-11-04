@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CityWeatherDao {
     @Query("SELECT * FROM city_weathers")
-    fun getAll(): Flow<CityWeatherEntity>
+    fun getAll(): Flow<List<CityWeatherEntity>>
 
     @Query("SELECT * FROM city_weathers WHERE cityName LIKE :cityName LIMIT 1")
     fun findByName(cityName: String): Flow<CityWeatherEntity>
