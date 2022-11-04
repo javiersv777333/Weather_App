@@ -25,7 +25,7 @@ data class CityWeatherEntity(
     @ColumnInfo(name = "sunrise") val sunrise: Int,
     @ColumnInfo(name = "sunset") val sunset: Int,
     @ColumnInfo(name = "timezone") val timezone: Int,
-    @ColumnInfo(name = "last_updated") val lastUpdated: Int
+    @ColumnInfo(name = "last_updated") val lastUpdated: Long?
 )
 
 fun CityWeatherEntity.toCityWeather(): CityWeather =
