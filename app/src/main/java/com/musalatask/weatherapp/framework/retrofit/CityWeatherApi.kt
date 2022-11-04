@@ -6,9 +6,8 @@ import retrofit2.http.Query
 
 interface CityWeatherApi {
 
-    @GET("/weather")
+    @GET("/data/2.5/weather")
     suspend fun getCityWeather(
-        @Query("appid") apiKey: String,
         @Query("lat") latitude: Double,
         @Query("lon") longitude: Double
     ): CityWeatherDto

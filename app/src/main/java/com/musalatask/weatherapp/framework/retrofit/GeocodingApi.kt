@@ -6,6 +6,8 @@ import retrofit2.http.Query
 
 interface GeocodingApi {
 
-    @GET("/direct?limit=1")
-    suspend fun getCoordinates(@Query("appid") apiKey: String, @Query("q") cityName: String): List<CoordinatesDto>
+    @GET("/geo/1.0/direct?limit=1")
+    suspend fun getCoordinates(
+        @Query("q") cityName: String
+    ): List<CoordinatesDto>
 }
