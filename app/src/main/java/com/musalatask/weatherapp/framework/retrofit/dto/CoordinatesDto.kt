@@ -12,7 +12,7 @@ data class CoordinatesDto(
 
 fun CoordinatesDto.toCoordinates(): Coordinates =
     Coordinates(
-        lat = lat,
-        lon = lon,
-        name = name
+        latitude = lat,
+        longitude = lon,
+        cityName = name
     )
