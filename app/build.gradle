@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId "com.musalatask.weatherapp"
-        minSdk 23
+        minSdk 24
         targetSdk 32
         versionCode 1
         versionName "1.0"
@@ -75,6 +75,9 @@ dependencies {
 
     //Joda Time
     implementation "joda-time:joda-time:2.10.10"
+
+    //Google Play Services
+    implementation 'com.google.android.gms:play-services-location:21.0.1'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
