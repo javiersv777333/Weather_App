@@ -4,5 +4,5 @@ import com.musalatask.weatherapp.data.model.CityWeather
 
 interface CityWeatherRemoteDataSource {
 
-    suspend fun getCityWeather(cityName: String): CityWeather
+    suspend fun getCityWeather(latitude: Double, longitude: Double): CityWeather
 }
