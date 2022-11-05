@@ -6,7 +6,7 @@ import retrofit2.HttpException
 import java.io.IOException
 
 fun <T : Any> getNetworkBoundWeatherResource(
-    query: () -> Flow<T?>,
+    query: suspend () -> T?,
     fetch: suspend () -> T?,
     saveFetchResult: suspend (T) -> Unit
 ): Flow<Resource<T?>> =
@@ -14,14 +14,14 @@ fun <T : Any> getNetworkBoundWeatherResource(
 
         emit(Resource.Loading())
 
-        val data = query().first()
+        val data = query()
         if (data != null) emit(Resource.Loading(data))
         try {
             val result = fetch()
             if (result == null) emit(Resource.Error("Resource not found!"))
             else {
                 saveFetchResult(result)
-                emit(Resource.Success(query().first()))
+                emit(Resource.Success(query()))
             }
         } catch (e: HttpException) {
             emit(
@@ -41,7 +41,7 @@ fun <T : Any> getNetworkBoundWeatherResource(
     }
 
 fun <T : Any> getNetworkBoundCoordinatesResource(
-    query: () -> Flow<T?>,
+    query: suspend () -> T?,
     fetch: suspend () -> T?,
     saveFetchResult: suspend (T) -> Unit
 ): Flow<Resource<T?>> =
@@ -49,7 +49,7 @@ fun <T : Any> getNetworkBoundCoordinatesResource(
 
         emit(Resource.Loading())
 
-        val data = query().first()
+        val data = query()
         if (data != null) emit(Resource.Success(data))
         else {
             try {
@@ -57,7 +57,7 @@ fun <T : Any> getNetworkBoundCoordinatesResource(
                 if (result == null) emit(Resource.Error("Resource not found!"))
                 else {
                     saveFetchResult(result)
-                    emit(Resource.Success(query().first()))
+                    emit(Resource.Success(query()))
                 }
             } catch (e: HttpException) {
                 emit(Resource.Error("Oops, something went wrong!"))

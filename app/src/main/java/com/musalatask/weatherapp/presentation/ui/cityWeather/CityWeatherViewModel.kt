@@ -1,9 +1,6 @@
 package com.musalatask.weatherapp.presentation.ui.cityWeather
 
-import android.util.Log
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.musalatask.weatherapp.common.Resource
 import com.musalatask.weatherapp.data.model.CityWeather
@@ -38,11 +35,17 @@ class CityWeatherViewModel @Inject constructor(
 
     private var lastUpdateDateTime: DateTime? = null
 
+    private lateinit var lastRequestFlow: Flow<Resource<CityWeather?>>
+
     init {
         viewModelScope.launch {
-            timerFlow(Duration.standardMinutes(1)).collect{
+            timerFlow(Duration.standardMinutes(1)).collect {
                 _currentTime.update { (DateTimeUtils.formatDateTime(DateTime.now())) }
-                if (lastUpdateDateTime != null) _lastUpdate.update { DateTimeUtils.getElapseTime(lastUpdateDateTime!!) }
+                if (lastUpdateDateTime != null) _lastUpdate.update {
+                    DateTimeUtils.getElapseTime(
+                        lastUpdateDateTime!!
+                    )
+                }
             }
         }
     }
@@ -55,10 +58,22 @@ class CityWeatherViewModel @Inject constructor(
         }
     }
 
-    fun getCurrentCityWeather(latitude: Double, longitude: Double) {
+    fun getCurrentCityWeather(latitude: Double, longitude: Double) =
+        getCityWeather(latitude = latitude, longitude = longitude)
+
+    fun getCityWeatherByName(cityName: String) =
+        getCityWeather(cityName = cityName)
+
+    private fun getCityWeather(latitude: Double? = null, longitude: Double? = null, cityName: String? = null) {
+        searchWeatherCityJob?.cancel()
+
+        val flow = if (cityName != null) getACityWeather(cityName)
+        else getMyCurrentCityWeather(latitude = latitude!!, longitude = longitude!!)
+
+        lastRequestFlow = flow
+
         searchWeatherCityJob = viewModelScope.launch {
-            getMyCurrentCityWeather(latitude = latitude, longitude = longitude)
-                .onEach { cityWeatherResource ->
+            flow.onEach { cityWeatherResource ->
                     when (cityWeatherResource) {
                         is Resource.Success -> {
                             updateUiStateFromSuccessResource(cityWeatherResource as Resource.Success<CityWeather>)
@@ -74,7 +89,7 @@ class CityWeatherViewModel @Inject constructor(
         }
     }
 
-    private fun updateUiStateFromSuccessResource(resource: Resource.Success<CityWeather>){
+    private fun updateUiStateFromSuccessResource(resource: Resource.Success<CityWeather>) {
         _uiState.update {
             it.copy(
                 isLoading = false,
@@ -85,7 +100,26 @@ class CityWeatherViewModel @Inject constructor(
         _lastUpdate.update { DateTimeUtils.getElapseTime(lastUpdateDateTime!!) }
     }
 
-    private fun updateUiStateFromLoadingResource(resource: Resource.Loading<CityWeather?>){
+    fun refreshWeather(){
+        searchWeatherCityJob?.cancel()
+        searchWeatherCityJob = viewModelScope.launch {
+            lastRequestFlow.onEach { cityWeatherResource ->
+                when (cityWeatherResource) {
+                    is Resource.Success -> {
+                        updateUiStateFromSuccessResource(cityWeatherResource as Resource.Success<CityWeather>)
+                    }
+                    is Resource.Loading -> {
+                        updateUiStateFromLoadingResource(cityWeatherResource)
+                    }
+                    is Resource.Error -> {
+                        updateUiStateFromErrorResource(cityWeatherResource)
+                    }
+                }
+            }.launchIn(this)
+        }
+    }
+
+    private fun updateUiStateFromLoadingResource(resource: Resource.Loading<CityWeather?>) {
         _uiState.update {
             it.copy(
                 isLoading = resource.data == null,
@@ -98,7 +132,7 @@ class CityWeatherViewModel @Inject constructor(
         }
     }
 
-    private fun updateUiStateFromErrorResource(resource: Resource.Error<CityWeather?>){
+    private fun updateUiStateFromErrorResource(resource: Resource.Error<CityWeather?>) {
         _uiState.update {
             it.copy(
                 errorMessage = resource.message

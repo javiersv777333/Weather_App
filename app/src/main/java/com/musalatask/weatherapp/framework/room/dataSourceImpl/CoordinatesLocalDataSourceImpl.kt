@@ -14,8 +14,8 @@ class CoordinatesLocalDataSourceImpl @Inject constructor(
     private val db: AppDataBase
 ) : CoordinatesLocalDataSource {
 
-    override fun getCoordinatesOfACity(cityName: String): Flow<Coordinates?> =
-        db.coordinatesDao().findByName(cityName).map { it?.toCoordinates() }
+    override suspend fun getCoordinatesOfACity(cityName: String): Coordinates? =
+        db.coordinatesDao().findByName(cityName)?.toCoordinates()
 
     override suspend fun insertCoordinates(vararg coordinates: Coordinates) {
         db.coordinatesDao().insertAll(coordinates.map { it.toCoordinatesEntity() })

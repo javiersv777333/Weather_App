@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface CoordinatesLocalDataSource {
 
-    fun getCoordinatesOfACity(cityName: String): Flow<Coordinates?>
+    suspend fun getCoordinatesOfACity(cityName: String): Coordinates?
     suspend fun insertCoordinates(vararg coordinates: Coordinates)
 
     suspend fun <R> withTransaction(block: suspend () -> R): R

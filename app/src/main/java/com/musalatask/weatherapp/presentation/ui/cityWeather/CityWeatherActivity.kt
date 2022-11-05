@@ -80,7 +80,7 @@ class CityWeatherActivity : AppCompatActivity() {
                     .map { it.cityWeather?.cityName }
                     .filter { it != null }
                     .distinctUntilChanged()
-                    .collect{
+                    .collect {
                         supportActionBar?.title = it
                     }
             }
@@ -207,6 +207,7 @@ class CityWeatherActivity : AppCompatActivity() {
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
+                query?.let { viewModel.getCityWeatherByName(it) }
                 return true
             }
 

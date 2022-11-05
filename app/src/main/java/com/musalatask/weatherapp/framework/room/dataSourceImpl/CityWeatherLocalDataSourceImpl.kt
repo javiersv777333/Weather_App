@@ -16,8 +16,8 @@ class CityWeatherLocalDataSourceImpl @Inject constructor(
     private val db: AppDataBase
 ) : CityWeatherLocalDataSource {
 
-    override fun getCityWeather(cityName: String): Flow<CityWeather?> =
-        db.cityWeatherDao().findByName(cityName).map { it?.toCityWeather() }
+    override suspend fun getCityWeather(cityName: String): CityWeather? =
+        db.cityWeatherDao().findByName(cityName)?.toCityWeather()
 
     override suspend fun insertCityWeather(cityWeather: CityWeather) {
         db.cityWeatherDao().insertAll(cityWeather.toCityWeatherEntity())

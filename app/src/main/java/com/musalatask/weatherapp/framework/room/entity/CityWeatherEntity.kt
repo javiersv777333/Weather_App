@@ -25,7 +25,10 @@ data class CityWeatherEntity(
     @ColumnInfo(name = "sunrise") val sunrise: Int,
     @ColumnInfo(name = "sunset") val sunset: Int,
     @ColumnInfo(name = "timezone") val timezone: Int,
-    @ColumnInfo(name = "last_updated") val lastUpdated: Long?
+    @ColumnInfo(name = "last_updated") val lastUpdated: Long?,
+    @ColumnInfo(name = "coordinates_name") var coordinatesName: String? //This variable is needed
+    // because a city weather name can be different than its coordinates name, and for finding in
+    // database a common name should be use, this variable will be that common name.
 )
 
 fun CityWeatherEntity.toCityWeather(): CityWeather =
@@ -48,5 +51,6 @@ fun CityWeatherEntity.toCityWeather(): CityWeather =
         sunset = sunset,
         timezone = timezone,
         cityName = cityName,
-        lastUpdated = lastUpdated
+        lastUpdated = lastUpdated,
+        coordinatesName = coordinatesName
     )

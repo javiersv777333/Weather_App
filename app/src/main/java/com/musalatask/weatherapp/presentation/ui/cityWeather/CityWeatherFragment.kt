@@ -60,7 +60,7 @@ class CityWeatherFragment : Fragment() {
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.lastUpdate.collect {
-                    if (!it.isNullOrEmpty())
+                    if (it.isNotEmpty())
                         binding.elapseTime.text = "Last update: $it"
                 }
             }
@@ -73,6 +73,8 @@ class CityWeatherFragment : Fragment() {
                 }
             }
         }
+
+        binding.refresh.setOnRefreshListener { viewModel.refreshWeather() }
     }
 
     private fun setUi(state: CityWeatherUiState) {
@@ -81,6 +83,7 @@ class CityWeatherFragment : Fragment() {
             setImagesVisibility(View.INVISIBLE)
         } else {
             binding.progressBar.visibility = View.INVISIBLE
+            binding.refresh.isRefreshing = false
         }
 
         if (state.errorMessage != null) {

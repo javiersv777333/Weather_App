@@ -7,10 +7,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface CoordinatesDao {
     @Query("SELECT * FROM coordinates")
-    fun getAll(): Flow<List<CoordinatesEntity>>
+    suspend fun getAll(): List<CoordinatesEntity>
 
     @Query("SELECT * FROM coordinates WHERE cityName LIKE :cityName LIMIT 1")
-    fun findByName(cityName: String): Flow<CoordinatesEntity?>
+    suspend fun findByName(cityName: String): CoordinatesEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(coordinatesEntities: List<CoordinatesEntity>)
