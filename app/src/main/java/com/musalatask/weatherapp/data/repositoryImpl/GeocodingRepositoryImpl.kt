@@ -31,6 +31,11 @@ class GeocodingRepositoryImpl @Inject constructor(
         flow {
             emit(Resource.Loading())
             val coordinates = remoteDataSource.getCoordinates(latitude = latitude, longitude = longitude)
-            emitAll(getCoordinatesOfACity(coordinates.cityName))
+            coordinates?.let {
+                localDataSource.withTransaction {
+                    localDataSource.insertCoordinates(it)
+                }
+                emit(Resource.Success(localDataSource.getCoordinatesOfACity(coordinates.cityName)))
+            } ?: emit(Resource.Error("Resource not found!"))
         }
 }

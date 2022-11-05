@@ -35,7 +35,7 @@ class CityWeatherViewModel @Inject constructor(
 
     private var lastUpdateDateTime: DateTime? = null
 
-    private lateinit var lastRequestFlow: Flow<Resource<CityWeather?>>
+    private var lastSuccessCityName: String? = null
 
     init {
         viewModelScope.launch {
@@ -64,46 +64,18 @@ class CityWeatherViewModel @Inject constructor(
     fun getCityWeatherByName(cityName: String) =
         getCityWeather(cityName = cityName)
 
-    private fun getCityWeather(latitude: Double? = null, longitude: Double? = null, cityName: String? = null) {
+    private fun getCityWeather(
+        latitude: Double? = null,
+        longitude: Double? = null,
+        cityName: String? = null
+    ) {
         searchWeatherCityJob?.cancel()
 
         val flow = if (cityName != null) getACityWeather(cityName)
         else getMyCurrentCityWeather(latitude = latitude!!, longitude = longitude!!)
 
-        lastRequestFlow = flow
-
         searchWeatherCityJob = viewModelScope.launch {
             flow.onEach { cityWeatherResource ->
-                    when (cityWeatherResource) {
-                        is Resource.Success -> {
-                            updateUiStateFromSuccessResource(cityWeatherResource as Resource.Success<CityWeather>)
-                        }
-                        is Resource.Loading -> {
-                            updateUiStateFromLoadingResource(cityWeatherResource)
-                        }
-                        is Resource.Error -> {
-                            updateUiStateFromErrorResource(cityWeatherResource)
-                        }
-                    }
-                }.launchIn(this)
-        }
-    }
-
-    private fun updateUiStateFromSuccessResource(resource: Resource.Success<CityWeather>) {
-        _uiState.update {
-            it.copy(
-                isLoading = false,
-                cityWeather = resource.data
-            )
-        }
-        lastUpdateDateTime = resource.data?.lastUpdated?.let { DateTime(it) }
-        _lastUpdate.update { DateTimeUtils.getElapseTime(lastUpdateDateTime!!) }
-    }
-
-    fun refreshWeather(){
-        searchWeatherCityJob?.cancel()
-        searchWeatherCityJob = viewModelScope.launch {
-            lastRequestFlow.onEach { cityWeatherResource ->
                 when (cityWeatherResource) {
                     is Resource.Success -> {
                         updateUiStateFromSuccessResource(cityWeatherResource as Resource.Success<CityWeather>)
@@ -119,11 +91,25 @@ class CityWeatherViewModel @Inject constructor(
         }
     }
 
+    private fun updateUiStateFromSuccessResource(resource: Resource.Success<CityWeather>) {
+        _uiState.update {
+            it.copy(
+                isLoading = false,
+                cityWeather = resource.data,
+                errorMessage = null
+            )
+        }
+        lastUpdateDateTime = resource.data?.lastUpdated?.let { DateTime(it) }
+        _lastUpdate.update { DateTimeUtils.getElapseTime(lastUpdateDateTime!!) }
+        lastSuccessCityName = resource.data?.cityName
+    }
+
     private fun updateUiStateFromLoadingResource(resource: Resource.Loading<CityWeather?>) {
         _uiState.update {
             it.copy(
                 isLoading = resource.data == null,
-                cityWeather = resource.data
+                cityWeather = resource.data,
+                errorMessage = null
             )
         }
         resource.data?.let {
@@ -137,6 +123,15 @@ class CityWeatherViewModel @Inject constructor(
             it.copy(
                 errorMessage = resource.message
             )
+        }
+    }
+
+    fun refreshWeather() {
+        searchWeatherCityJob?.cancel()
+        lastSuccessCityName?.let {
+            searchWeatherCityJob = viewModelScope.launch {
+                getCityWeatherByName(it)
+            }
         }
     }
 }

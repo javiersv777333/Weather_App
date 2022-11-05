@@ -13,7 +13,7 @@ interface CityWeatherDao {
     @Query("SELECT * FROM city_weathers")
     suspend fun getAll(): List<CityWeatherEntity>
 
-    @Query("SELECT * FROM city_weathers WHERE coordinates_name LIKE :cityName LIMIT 1")
+    @Query("SELECT * FROM city_weathers WHERE coordinates_name LIKE :cityName OR cityName LIKE :cityName LIMIT 1")
     suspend fun findByName(cityName: String): CityWeatherEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

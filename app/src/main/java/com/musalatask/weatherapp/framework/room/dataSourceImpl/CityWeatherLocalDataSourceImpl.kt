@@ -1,5 +1,6 @@
 package com.musalatask.weatherapp.framework.room.dataSourceImpl
 
+import android.util.Log
 import androidx.room.withTransaction
 import com.musalatask.weatherapp.data.local.CityWeatherLocalDataSource
 import com.musalatask.weatherapp.data.model.CityWeather
@@ -16,8 +17,10 @@ class CityWeatherLocalDataSourceImpl @Inject constructor(
     private val db: AppDataBase
 ) : CityWeatherLocalDataSource {
 
-    override suspend fun getCityWeather(cityName: String): CityWeather? =
-        db.cityWeatherDao().findByName(cityName)?.toCityWeather()
+    override suspend fun getCityWeather(cityName: String): CityWeather? {
+        Log.d("qqqqqqqq", "get $cityName weather from db")
+        return db.cityWeatherDao().findByName(cityName)?.toCityWeather()
+    }
 
     override suspend fun insertCityWeather(cityWeather: CityWeather) {
         db.cityWeatherDao().insertAll(cityWeather.toCityWeatherEntity())

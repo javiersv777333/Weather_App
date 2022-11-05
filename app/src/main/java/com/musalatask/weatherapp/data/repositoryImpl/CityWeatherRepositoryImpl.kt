@@ -41,7 +41,7 @@ class CityWeatherRepositoryImpl @Inject constructor(
                 when (coordinates) {
                     is Resource.Error -> flow { emit(Resource.Error(coordinates.message!!)) }
                     is Resource.Success -> if (coordinates.data == null) flow {
-                        emit(Resource.Success(null))
+                        emit(Resource.Error("Resource not found!"))
                     } else getCityWeather(
                         cityName = coordinates.data!!.cityName,
                         latitude = coordinates.data!!.latitude,

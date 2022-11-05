@@ -15,18 +15,18 @@ fun <T : Any> getNetworkBoundWeatherResource(
         emit(Resource.Loading())
 
         val data = query()
-        if (data != null) emit(Resource.Loading(data))
+        if (data != null) emit(Resource.Success(data))
         try {
             val result = fetch()
-            if (result == null) emit(Resource.Error("Resource not found!"))
+            if (result == null) emit(Resource.Error(data = data, message = "Resource not found!"))
             else {
                 saveFetchResult(result)
                 emit(Resource.Success(query()))
             }
         } catch (e: HttpException) {
-            emit(Resource.Error(message = "Oops, something went wrong!"))
+            emit(Resource.Error(data = data, message = "Oops, something went wrong!"))
         } catch (e: IOException) {
-            emit(Resource.Error(message = "Couldn't reach server, check your internet connection."))
+            emit(Resource.Error(data = data, message = "Couldn't reach server, check your internet connection."))
         }
     }
 

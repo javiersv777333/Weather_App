@@ -1,6 +1,7 @@
 package com.musalatask.weatherapp.presentation.ui.cityWeather
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
@@ -8,12 +9,16 @@ import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS
 import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -27,7 +32,6 @@ import com.musalatask.weatherapp.R
 import com.musalatask.weatherapp.databinding.ActivityCityWeatherBinding
 import com.musalatask.weatherapp.framework.utils.DialogsUtils
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
@@ -38,6 +42,7 @@ import java.util.concurrent.TimeUnit
 class CityWeatherActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var searchMenuItem: MenuItem
     private lateinit var binding: ActivityCityWeatherBinding
     private lateinit var viewModel: CityWeatherViewModel
 
@@ -50,7 +55,7 @@ class CityWeatherActivity : AppCompatActivity() {
 
     // LocationListener - Called when FusedLocationProviderClient
     // has a new Location
-    private lateinit var locationListener: LocationListener
+    private lateinit var locationCallback: LocationCallback
 
     private lateinit var locationPermissionRequest: ActivityResultLauncher<String>
 
@@ -77,11 +82,12 @@ class CityWeatherActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState
+                    .filter { !it.isLoading && it.errorMessage == null && it.cityWeather != null }
                     .map { it.cityWeather?.cityName }
-                    .filter { it != null }
                     .distinctUntilChanged()
                     .collect {
                         supportActionBar?.title = it
+                        searchMenuItem.collapseActionView()
                     }
             }
         }
@@ -89,6 +95,7 @@ class CityWeatherActivity : AppCompatActivity() {
 
     private fun initializeLocationComponents() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
         locationRequest = LocationRequest().apply {
             // Sets the desired interval for
             // active location updates.
@@ -108,9 +115,13 @@ class CityWeatherActivity : AppCompatActivity() {
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
 
-        locationListener = LocationListener { l ->
-            viewModel.getCurrentCityWeather(latitude = l.latitude, longitude = l.longitude)
-            fusedLocationClient.removeLocationUpdates(locationListener)
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(var1: LocationResult) {
+                var1.lastLocation?.let {
+                    viewModel.getCurrentCityWeather(latitude = it.latitude, longitude = it.longitude)
+                    fusedLocationClient.removeLocationUpdates(locationCallback)
+                }
+            }
         }
 
         locationPermissionRequest =
@@ -192,8 +203,8 @@ class CityWeatherActivity : AppCompatActivity() {
         ) {
             fusedLocationClient.requestLocationUpdates(
                 locationRequest,
-                locationListener,
-                Looper.myLooper()
+                locationCallback,
+                Looper.getMainLooper()
             )
         }
     }
@@ -201,13 +212,16 @@ class CityWeatherActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
-        val menuItem = menu.findItem(R.id.action_search)
-        val searchView = menuItem.actionView as SearchView
+        searchMenuItem = menu.findItem(R.id.action_search)
+        val searchView = searchMenuItem.actionView as SearchView
         searchView.queryHint = "Type a city name"
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                query?.let { viewModel.getCityWeatherByName(it) }
+                query?.let {
+                    viewModel.getCityWeatherByName(it)
+                    hideKeyBoard()
+                }
                 return true
             }
 
@@ -225,8 +239,16 @@ class CityWeatherActivity : AppCompatActivity() {
                 || super.onSupportNavigateUp()
     }
 
+    private fun hideKeyBoard(){
+        // Check if no view has focus:
+        val view: View? = this.currentFocus
+        val imm: InputMethodManager =
+            getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view?.windowToken, 0)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        fusedLocationClient.removeLocationUpdates(locationListener)
+        fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 }

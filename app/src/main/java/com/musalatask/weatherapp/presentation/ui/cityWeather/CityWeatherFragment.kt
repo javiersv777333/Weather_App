@@ -1,9 +1,7 @@
 package com.musalatask.weatherapp.presentation.ui.cityWeather
 
-import android.content.Context
 import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,12 +15,12 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
+import com.google.android.material.snackbar.Snackbar
 import com.musalatask.weatherapp.databinding.FragmentCityWeatherBinding
 import com.musalatask.weatherapp.framework.utils.DateTimeUtils
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import java.util.Timer
+
 
 @AndroidEntryPoint
 class CityWeatherFragment : Fragment() {
@@ -78,19 +76,36 @@ class CityWeatherFragment : Fragment() {
     }
 
     private fun setUi(state: CityWeatherUiState) {
+        try{
         if (state.isLoading) {
             binding.progressBar.visibility = View.VISIBLE
             setImagesVisibility(View.INVISIBLE)
+            binding.empty.visibility = View.INVISIBLE
+            binding.weatherInfo.visibility = View.INVISIBLE
         } else {
             binding.progressBar.visibility = View.INVISIBLE
             binding.refresh.isRefreshing = false
         }
 
         if (state.errorMessage != null) {
-            if (state.cityWeather == null) setImagesVisibility(View.INVISIBLE)
+            if (state.cityWeather == null) {
+                setImagesVisibility(View.INVISIBLE)
+                binding.empty.visibility = View.VISIBLE
+                binding.weatherInfo.visibility = View.INVISIBLE
+            }else{
+                setImagesVisibility(View.VISIBLE)
+                binding.empty.visibility = View.INVISIBLE
+                binding.weatherInfo.visibility = View.VISIBLE
+            }
+            showError(state.errorMessage)
+            binding.progressBar.visibility = View.INVISIBLE
+            binding.refresh.isRefreshing = false
         } else if (state.cityWeather != null) {
 
+            binding.empty.visibility = View.GONE
             setImagesVisibility(View.VISIBLE)
+            binding.weatherInfo.visibility = View.VISIBLE
+
             with(state.cityWeather) {
                 displayImageFromUrl(
                     url = "https://openweathermap.org/img/w/${iconId}.png",
@@ -119,6 +134,15 @@ class CityWeatherFragment : Fragment() {
                 binding.sunrise.text = "Sunrise: ${DateTimeUtils.formatTime(sunrise * 1000L)}"
             }
         }
+        }catch (e: Exception){
+            val y = 7
+        }
+    }
+
+    private fun showError(message: String){
+        val snackbar = Snackbar
+            .make(binding.root, message, Snackbar.LENGTH_LONG)
+        snackbar.show()
     }
 
     private fun setImagesVisibility(visibility: Int) {
