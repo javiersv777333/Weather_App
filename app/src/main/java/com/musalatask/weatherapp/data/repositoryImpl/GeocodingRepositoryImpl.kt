@@ -4,9 +4,11 @@ import com.musalatask.weatherapp.common.Resource
 import com.musalatask.weatherapp.data.local.CoordinatesLocalDataSource
 import com.musalatask.weatherapp.data.model.Coordinates
 import com.musalatask.weatherapp.data.remote.CoordinatesRemoteDataSource
-import com.musalatask.weatherapp.data.utils.getNetworkBoundResource
+import com.musalatask.weatherapp.data.utils.getNetworkBoundCoordinatesResource
 import com.musalatask.weatherapp.domain.repository.GeocodingRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class GeocodingRepositoryImpl @Inject constructor(
@@ -15,14 +17,20 @@ class GeocodingRepositoryImpl @Inject constructor(
 ) : GeocodingRepository {
 
     override fun getCoordinatesOfACity(cityName: String): Flow<Resource<Coordinates?>> =
-        getNetworkBoundResource(
+        getNetworkBoundCoordinatesResource(
             query = { localDataSource.getCoordinatesOfACity(cityName) },
             fetch = { remoteDataSource.getCoordinatesOfACity(cityName) },
             saveFetchResult = {
                 localDataSource.withTransaction {
                     localDataSource.insertCoordinates(it)
                 }
-            },
-            shouldFetch = { it == null }
+            }
         )
+
+    override fun getCoordinatesOfACity(latitude: Double, longitude: Double): Flow<Resource<Coordinates?>> =
+        flow {
+            emit(Resource.Loading())
+            val coordinates = remoteDataSource.getCoordinates(latitude = latitude, longitude = longitude)
+            emitAll(getCoordinatesOfACity(coordinates.cityName))
+        }
 }
