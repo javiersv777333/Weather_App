@@ -10,4 +10,10 @@ interface GeocodingApi {
     suspend fun getCoordinates(
         @Query("q") cityName: String
     ): List<CoordinatesDto>
+
+    @GET("/geo/1.0/reverse?limit=1")
+    suspend fun getCoordinates(
+        @Query("lat") latitude: Double,
+        @Query("lon") longitude: Double
+    ): List<CoordinatesDto>
 }
