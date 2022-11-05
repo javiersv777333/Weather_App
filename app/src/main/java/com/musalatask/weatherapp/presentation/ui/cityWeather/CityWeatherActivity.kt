@@ -10,11 +10,14 @@ import android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS
 import android.view.Menu
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -24,16 +27,19 @@ import com.musalatask.weatherapp.R
 import com.musalatask.weatherapp.databinding.ActivityCityWeatherBinding
 import com.musalatask.weatherapp.framework.utils.DialogsUtils
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
-
-const val GPS_REQUEST = 7
 
 @AndroidEntryPoint
 class CityWeatherActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityCityWeatherBinding
-    private val viewModel: CityWeatherViewModel by viewModels()
+    private lateinit var viewModel: CityWeatherViewModel
 
     // FusedLocationProviderClient - Main class for receiving location updates.
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -61,9 +67,24 @@ class CityWeatherActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
+        viewModel =
+            ViewModelProvider(this)[CityWeatherViewModel::class.java]
+
         initializeLocationComponents()
 
         checkForLocationPermission()
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState
+                    .map { it.cityWeather?.cityName }
+                    .filter { it != null }
+                    .distinctUntilChanged()
+                    .collect{
+                        supportActionBar?.title = it
+                    }
+            }
+        }
     }
 
     private fun initializeLocationComponents() {
@@ -87,13 +108,14 @@ class CityWeatherActivity : AppCompatActivity() {
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         }
 
-        locationListener = LocationListener { p0 ->
-            val l = p0
+        locationListener = LocationListener { l ->
+            viewModel.getCurrentCityWeather(latitude = l.latitude, longitude = l.longitude)
             fusedLocationClient.removeLocationUpdates(locationListener)
         }
 
-        locationPermissionRequest = registerForActivityResult( ActivityResultContracts.RequestPermission())
-        { isGranted: Boolean ->
+        locationPermissionRequest =
+            registerForActivityResult(ActivityResultContracts.RequestPermission())
+            { isGranted: Boolean ->
                 if (isGranted) { // Permission is granted. Continue the action or workflow in your
                     tryToRequestLocation()
                 } else {

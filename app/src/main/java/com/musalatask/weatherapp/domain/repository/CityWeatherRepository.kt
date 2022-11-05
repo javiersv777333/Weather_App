@@ -7,4 +7,5 @@ import kotlinx.coroutines.flow.Flow
 interface CityWeatherRepository {
 
     fun getCityWeather(cityName: String): Flow<Resource<CityWeather?>>
+    fun getCityWeather(latitude: Double, longitude: Double): Flow<Resource<CityWeather?>>
 }
