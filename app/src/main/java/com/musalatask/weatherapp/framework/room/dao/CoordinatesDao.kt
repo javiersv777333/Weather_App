@@ -1,9 +1,6 @@
 package com.musalatask.weatherapp.framework.room.dao
 
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room.*
 import com.musalatask.weatherapp.framework.room.entity.CoordinatesEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -15,8 +12,8 @@ interface CoordinatesDao {
     @Query("SELECT * FROM coordinates WHERE cityName LIKE :cityName LIMIT 1")
     fun findByName(cityName: String): Flow<CoordinatesEntity?>
 
-    @Insert
-    suspend fun insertAll(vararg coordinatesEntities: List<CoordinatesEntity>)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(coordinatesEntities: List<CoordinatesEntity>)
 
     @Delete
     suspend fun delete(coordinatesEntity: CoordinatesEntity)
