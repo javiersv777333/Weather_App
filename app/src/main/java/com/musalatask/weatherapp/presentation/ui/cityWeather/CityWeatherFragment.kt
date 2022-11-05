@@ -17,6 +17,7 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.snackbar.Snackbar
 import com.musalatask.weatherapp.databinding.FragmentCityWeatherBinding
+import com.musalatask.weatherapp.framework.utils.ActivityUtils
 import com.musalatask.weatherapp.framework.utils.DateTimeUtils
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -76,7 +77,6 @@ class CityWeatherFragment : Fragment() {
     }
 
     private fun setUi(state: CityWeatherUiState) {
-        try{
         if (state.isLoading) {
             binding.progressBar.visibility = View.VISIBLE
             setImagesVisibility(View.INVISIBLE)
@@ -92,7 +92,7 @@ class CityWeatherFragment : Fragment() {
                 setImagesVisibility(View.INVISIBLE)
                 binding.empty.visibility = View.VISIBLE
                 binding.weatherInfo.visibility = View.INVISIBLE
-            }else{
+            } else {
                 setImagesVisibility(View.VISIBLE)
                 binding.empty.visibility = View.INVISIBLE
                 binding.weatherInfo.visibility = View.VISIBLE
@@ -121,7 +121,7 @@ class CityWeatherFragment : Fragment() {
                 if (rainVolumeLastHour != null) {
                     binding.precipitation.text = "last hour: $rainVolumeLastHour mm"
                     binding.imageView6.visibility = View.VISIBLE
-                }else binding.imageView6.visibility = View.INVISIBLE
+                } else binding.imageView6.visibility = View.INVISIBLE
                 binding.air.text = "$windSpeed m/s"
                 binding.imageView5.rotation = windDirection.toFloat()
                 binding.visibility.text = "Visibility: $visibility m"
@@ -129,20 +129,15 @@ class CityWeatherFragment : Fragment() {
                 if (snowVolumeLastHour != null) {
                     binding.snow.text = "last hour: $snowVolumeLastHour mm"
                     binding.imageView7.visibility = View.VISIBLE
-                }else binding.imageView7.visibility = View.INVISIBLE
+                } else binding.imageView7.visibility = View.INVISIBLE
                 binding.sunset.text = "Sunset: ${DateTimeUtils.formatTime(sunset * 1000L)}"
                 binding.sunrise.text = "Sunrise: ${DateTimeUtils.formatTime(sunrise * 1000L)}"
             }
         }
-        }catch (e: Exception){
-            val y = 7
-        }
     }
 
-    private fun showError(message: String){
-        val snackbar = Snackbar
-            .make(binding.root, message, Snackbar.LENGTH_LONG)
-        snackbar.show()
+    private fun showError(message: String) {
+        ActivityUtils.showSnackBar(message = message, view = binding.root)
     }
 
     private fun setImagesVisibility(visibility: Int) {

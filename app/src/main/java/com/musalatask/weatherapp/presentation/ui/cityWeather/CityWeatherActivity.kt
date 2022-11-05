@@ -5,9 +5,14 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS
+import android.util.Log.d
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -19,18 +24,19 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.isVisible
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.*
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.work.*
 import com.google.android.gms.location.*
 import com.musalatask.weatherapp.R
 import com.musalatask.weatherapp.databinding.ActivityCityWeatherBinding
+import com.musalatask.weatherapp.framework.utils.ActivityUtils
+import com.musalatask.weatherapp.framework.utils.ConnectivityUtils
 import com.musalatask.weatherapp.framework.utils.DialogsUtils
+import com.musalatask.weatherapp.framework.utils.WaitForNetworkWorker
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
@@ -76,8 +82,7 @@ class CityWeatherActivity : AppCompatActivity() {
             ViewModelProvider(this)[CityWeatherViewModel::class.java]
 
         initializeLocationComponents()
-
-        checkForLocationPermission()
+        checkConnectionToStartRequestingLocation()
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -90,6 +95,41 @@ class CityWeatherActivity : AppCompatActivity() {
                         searchMenuItem.collapseActionView()
                     }
             }
+        }
+    }
+
+    private fun checkConnectionToStartRequestingLocation() {
+        if (!ConnectivityUtils.hasNetworkAvailable(this)) {
+            performWorkToWaitingForConnection { checkForLocationPermission() }
+        } else {
+            checkForLocationPermission()
+        }
+    }
+
+    private fun performWorkToWaitingForConnection(actionForWhenConnectionAreAvailable: () -> Unit) {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val waitForNetworkWork: WorkRequest =
+            OneTimeWorkRequestBuilder<WaitForNetworkWorker>()
+                .setConstraints(constraints)
+                .build()
+
+        WorkManager
+            .getInstance(application)
+            .enqueue(waitForNetworkWork)
+
+        lifecycleScope.launch {
+            WorkManager
+                .getInstance(application)
+                .getWorkInfoByIdLiveData(waitForNetworkWork.id)
+                .asFlow()
+                .filter {
+                    it.state == WorkInfo.State.SUCCEEDED
+                }.collect {
+                    actionForWhenConnectionAreAvailable()
+                }
         }
     }
 
@@ -118,7 +158,10 @@ class CityWeatherActivity : AppCompatActivity() {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(var1: LocationResult) {
                 var1.lastLocation?.let {
-                    viewModel.getCurrentCityWeather(latitude = it.latitude, longitude = it.longitude)
+                    viewModel.getCurrentCityWeather(
+                        latitude = it.latitude,
+                        longitude = it.longitude
+                    )
                     fusedLocationClient.removeLocationUpdates(locationCallback)
                 }
             }
@@ -220,7 +263,7 @@ class CityWeatherActivity : AppCompatActivity() {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let {
                     viewModel.getCityWeatherByName(it)
-                    hideKeyBoard()
+                    ActivityUtils.hideKeyBoard(this@CityWeatherActivity)
                 }
                 return true
             }
@@ -239,16 +282,9 @@ class CityWeatherActivity : AppCompatActivity() {
                 || super.onSupportNavigateUp()
     }
 
-    private fun hideKeyBoard(){
-        // Check if no view has focus:
-        val view: View? = this.currentFocus
-        val imm: InputMethodManager =
-            getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        imm.hideSoftInputFromWindow(view?.windowToken, 0)
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         fusedLocationClient.removeLocationUpdates(locationCallback)
+        WorkManager.getInstance(application).cancelAllWork()
     }
 }
