@@ -18,4 +18,9 @@ class CoordinatesRemoteDataSourceImpl @Inject constructor(
             val result = api.getCoordinates(cityName)
             if (result.isNotEmpty()) result[0].toCoordinates() else null
         }
+
+    override suspend fun getCoordinates(latitude: Double, longitude: Double): Coordinates =
+        withContext(dispatcher) {
+            api.getCoordinates(latitude = latitude, longitude = longitude)[0].toCoordinates()
+        }
 }
