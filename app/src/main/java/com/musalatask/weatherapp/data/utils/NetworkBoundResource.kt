@@ -24,19 +24,9 @@ fun <T : Any> getNetworkBoundWeatherResource(
                 emit(Resource.Success(query()))
             }
         } catch (e: HttpException) {
-            emit(
-                Resource.Error(
-                    data = data,
-                    message = "Oops, something went wrong!"
-                )
-            )
+            emit(Resource.Error(message = "Oops, something went wrong!"))
         } catch (e: IOException) {
-            emit(
-                Resource.Error(
-                    data = data,
-                    message = "Couldn't reach server, check your internet connection."
-                )
-            )
+            emit(Resource.Error(message = "Couldn't reach server, check your internet connection."))
         }
     }
 
