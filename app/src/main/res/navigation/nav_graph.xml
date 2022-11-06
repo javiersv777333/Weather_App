@@ -9,5 +9,12 @@
         android:id="@+id/CityWeatherFragment"
         android:name="com.musalatask.weatherapp.presentation.ui.cityWeather.CityWeatherFragment"
         tools:layout="@layout/fragment_city_weather">
+        <action
+            android:id="@+id/action_CityWeatherFragment_to_myCitiesFragment"
+            app:destination="@id/myCitiesFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/myCitiesFragment"
+        android:name="com.musalatask.weatherapp.presentation.ui.myCities.MyCitiesFragment"
+        tools:layout="@layout/fragment_my_cities" />
 </navigation>

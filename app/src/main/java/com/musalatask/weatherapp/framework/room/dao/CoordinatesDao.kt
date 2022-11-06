@@ -15,6 +15,9 @@ interface CoordinatesDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(coordinatesEntities: List<CoordinatesEntity>)
 
+    @Query("DELETE FROM coordinates WHERE cityName LIKE :cityName")
+    suspend fun delete(cityName: String)
+
     @Delete
     suspend fun delete(coordinatesEntity: CoordinatesEntity)
 

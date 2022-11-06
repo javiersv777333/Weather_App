@@ -24,6 +24,12 @@ class CoordinatesLocalDataSourceImpl @Inject constructor(
         db.coordinatesDao().insertAll(coordinates.map { it.toCoordinatesEntity() })
     }
 
+    override suspend fun deleteCoordinates(cityName: String) {
+        withTransaction {
+            db.coordinatesDao().delete(cityName)
+        }
+    }
+
     override suspend fun <R> withTransaction(block: suspend () -> R): R =
         db.withTransaction(block)
 }

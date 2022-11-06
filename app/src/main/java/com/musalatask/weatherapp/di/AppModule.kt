@@ -11,7 +11,9 @@ import com.musalatask.weatherapp.data.repositoryImpl.CityWeatherRepositoryImpl
 import com.musalatask.weatherapp.data.repositoryImpl.GeocodingRepositoryImpl
 import com.musalatask.weatherapp.domain.repository.CityWeatherRepository
 import com.musalatask.weatherapp.domain.repository.GeocodingRepository
+import com.musalatask.weatherapp.domain.use_case.DeleteCity
 import com.musalatask.weatherapp.domain.use_case.GetACityWeather
+import com.musalatask.weatherapp.domain.use_case.GetMyCityNames
 import com.musalatask.weatherapp.domain.use_case.GetMyCurrentCityWeather
 import com.musalatask.weatherapp.framework.retrofit.CityWeatherApi
 import com.musalatask.weatherapp.framework.retrofit.GeocodingApi
@@ -124,4 +126,20 @@ object AppModule {
     @Singleton
     fun provideGetMyCurrentCityWeatherUseCase(cityWeatherRepository: CityWeatherRepository): GetMyCurrentCityWeather =
         GetMyCurrentCityWeather(cityWeatherRepository)
+
+    @Provides
+    @Singleton
+    fun provideGetMyCityNamesUseCase(cityWeatherRepository: CityWeatherRepository): GetMyCityNames =
+        GetMyCityNames(cityWeatherRepository)
+
+    @Provides
+    @Singleton
+    fun provideDeleteCityUseCase(
+        cityWeatherRepository: CityWeatherRepository,
+        geocodingRepository: GeocodingRepository
+    ): DeleteCity =
+        DeleteCity(
+            cityWeatherRepository = cityWeatherRepository,
+            geocodingRepository = geocodingRepository
+        )
 }

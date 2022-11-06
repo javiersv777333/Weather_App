@@ -26,6 +26,15 @@ class CityWeatherLocalDataSourceImpl @Inject constructor(
         db.cityWeatherDao().insertAll(cityWeather.toCityWeatherEntity())
     }
 
+    override fun getAllCityWeathers(): Flow<List<CityWeather>> =
+        db.cityWeatherDao().getAll().map { it.map { it.toCityWeather() } }
+
+    override suspend fun deleteCityWeather(cityName: String) {
+        withTransaction {
+            db.cityWeatherDao().delete(cityName)
+        }
+    }
+
     override suspend fun <R> withTransaction(block: suspend () -> R): R =
         db.withTransaction(block)
 

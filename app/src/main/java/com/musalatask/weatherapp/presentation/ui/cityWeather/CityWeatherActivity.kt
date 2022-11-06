@@ -32,6 +32,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.work.*
 import com.google.android.gms.location.*
 import com.musalatask.weatherapp.R
+import com.musalatask.weatherapp.common.Constants
 import com.musalatask.weatherapp.databinding.ActivityCityWeatherBinding
 import com.musalatask.weatherapp.framework.utils.ActivityUtils
 import com.musalatask.weatherapp.framework.utils.ConnectivityUtils
@@ -96,6 +97,18 @@ class CityWeatherActivity : AppCompatActivity() {
                     }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+        //Observe the result to be set by Fragment B in the stateHandle of the currentBackStackEntry
+        val currentBackStackEntry = findNavController(R.id.nav_host_fragment_content_main).currentBackStackEntry
+        val savedStateHandle = currentBackStackEntry?.savedStateHandle
+        savedStateHandle?.getLiveData<String>(Constants.SELECTED_CITY_KEY)
+            ?.observe(currentBackStackEntry, Observer { result ->
+                viewModel.getCityWeatherByName(result)
+            })
     }
 
     private fun checkConnectionToStartRequestingLocation() {
@@ -279,6 +292,19 @@ class CityWeatherActivity : AppCompatActivity() {
         })
 
         return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.action_pick -> navigateToMyCitiesFragment()
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun navigateToMyCitiesFragment(){
+        val navController = findNavController(R.id.nav_host_fragment_content_main)
+        navController.navigate(R.id.action_CityWeatherFragment_to_myCitiesFragment)
+
     }
 
     override fun onSupportNavigateUp(): Boolean {

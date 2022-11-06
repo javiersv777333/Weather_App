@@ -8,4 +8,5 @@ interface GeocodingRepository {
 
     fun getCoordinatesOfACity(cityName: String): Flow<Resource<Coordinates?>>
     fun getCoordinatesOfACity(latitude: Double, longitude: Double): Flow<Resource<Coordinates?>>
+    suspend fun deleteCoordinates(cityName: String)
 }

@@ -7,6 +7,7 @@ interface CoordinatesLocalDataSource {
 
     suspend fun getCoordinatesOfACity(cityName: String): Coordinates?
     suspend fun insertCoordinates(vararg coordinates: Coordinates)
+    suspend fun deleteCoordinates(cityName: String)
 
     suspend fun <R> withTransaction(block: suspend () -> R): R
 }

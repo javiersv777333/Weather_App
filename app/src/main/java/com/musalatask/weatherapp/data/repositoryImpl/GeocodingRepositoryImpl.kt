@@ -38,4 +38,8 @@ class GeocodingRepositoryImpl @Inject constructor(
                 emit(Resource.Success(localDataSource.getCoordinatesOfACity(coordinates.cityName)))
             } ?: emit(Resource.Error("Resource not found!"))
         }
+
+    override suspend fun deleteCoordinates(cityName: String) {
+        localDataSource.deleteCoordinates(cityName)
+    }
 }

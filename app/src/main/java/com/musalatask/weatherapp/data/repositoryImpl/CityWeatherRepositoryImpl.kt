@@ -27,6 +27,13 @@ class CityWeatherRepositoryImpl @Inject constructor(
     ): Flow<Resource<CityWeather?>> =
         getBaseCityWeather(latitude = latitude, longitude = longitude)
 
+    override fun getAllCityWeathers(): Flow<List<CityWeather>> =
+        localDataSource.getAllCityWeathers()
+
+    override suspend fun deleteCityWeather(cityName: String) {
+        localDataSource.deleteCityWeather(cityName)
+    }
+
     private fun getBaseCityWeather(
         latitude: Double? = null,
         longitude: Double? = null,
