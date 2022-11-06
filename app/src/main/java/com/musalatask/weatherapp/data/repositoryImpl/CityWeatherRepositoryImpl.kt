@@ -3,7 +3,6 @@ package com.musalatask.weatherapp.data.repositoryImpl
 import com.musalatask.weatherapp.common.Resource
 import com.musalatask.weatherapp.data.local.CityWeatherLocalDataSource
 import com.musalatask.weatherapp.data.model.CityWeather
-import com.musalatask.weatherapp.data.model.Coordinates
 import com.musalatask.weatherapp.data.remote.CityWeatherRemoteDataSource
 import com.musalatask.weatherapp.data.utils.getNetworkBoundWeatherResource
 import com.musalatask.weatherapp.domain.repository.CityWeatherRepository
@@ -73,7 +72,7 @@ class CityWeatherRepositoryImpl @Inject constructor(
         val now = DateTime.now().millis
         cityWeather.lastUpdated = now
         cityWeather.coordinatesName = coordinatesName
-        localDataSource.withTransaction {
+        localDataSource.withAsynchronousContext {
             localDataSource.insertCityWeather(cityWeather)
         }
     }
