@@ -22,6 +22,8 @@ data class CityWeather(
     val timezone: Int,
     val cityName: String,
     var lastUpdated: Long?,
+    val latitude: Double,
+    val longitude: Double,
     var coordinatesName: String? //This variable is needed because a city weather name can be different
     //than its coordinates name, and for finding in database a common name should be use, this
     //variable will be that common name.
@@ -48,5 +50,7 @@ fun CityWeather.toCityWeatherEntity(): CityWeatherEntity =
         timezone = timezone,
         cityName = cityName,
         lastUpdated = lastUpdated,
+        latitude = latitude,
+        longitude = longitude,
         coordinatesName = coordinatesName
     )

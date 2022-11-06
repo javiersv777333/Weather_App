@@ -1,6 +1,8 @@
 package com.musalatask.weatherapp.presentation.ui.cityWeather
 
+import android.content.Intent
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,10 +17,10 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
-import com.google.android.material.snackbar.Snackbar
 import com.musalatask.weatherapp.databinding.FragmentCityWeatherBinding
 import com.musalatask.weatherapp.framework.utils.ActivityUtils
 import com.musalatask.weatherapp.framework.utils.DateTimeUtils
+import com.nguyencse.URLEmbeddedTask
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -141,6 +143,13 @@ class CityWeatherFragment : Fragment() {
                 } else binding.imageView7.visibility = View.INVISIBLE
                 binding.sunset.text = "Sunset: ${DateTimeUtils.formatTime(sunset * 1000L)}"
                 binding.sunrise.text = "Sunrise: ${DateTimeUtils.formatTime(sunrise * 1000L)}"
+
+                binding.map.setOnClickListener {
+                    val url = "https://openweathermap.org/weathermap?basemap=map&cities=false&layer=clouds&lat=$latitude&lon=$longitude&zoom=3"
+                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    startActivity(browserIntent)
+                }
+
             }
         }
     }

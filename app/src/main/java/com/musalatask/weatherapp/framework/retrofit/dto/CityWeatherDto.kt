@@ -40,6 +40,8 @@ fun CityWeatherDto.toCityWeather(): CityWeather =
         sunset = sys.sunset,
         timezone = timezone,
         cityName = name,
+        latitude = coord.lat,
+        longitude = coord.lon,
         lastUpdated = null,
         coordinatesName = null
     )
