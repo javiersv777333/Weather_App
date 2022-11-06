@@ -7,13 +7,12 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.Navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.musalatask.weatherapp.common.Constants
 import com.musalatask.weatherapp.databinding.FragmentMyCitiesBinding
+import com.musalatask.weatherapp.presentation.ui.cityWeather.CityWeatherActivity
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -55,6 +54,13 @@ class MyCitiesFragment : Fragment() {
                 adapter.submitList(it)
             }
         }
+
+        (requireActivity() as CityWeatherActivity).requestCitiesWishContainsAText = {
+            viewModel.searchByText(it)
+        }
+        (requireActivity() as CityWeatherActivity).submitTextForSearch = {
+            viewModel.searchByText(it)
+        }
     }
 
     private fun selectCity(cityName: String){
@@ -63,5 +69,10 @@ class MyCitiesFragment : Fragment() {
         val savedStateHandle = findNavController().previousBackStackEntry?.savedStateHandle
         savedStateHandle?.set(Constants.SELECTED_CITY_KEY, cityName)
         findNavController().navigateUp()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        (requireActivity() as CityWeatherActivity).requestCitiesWishContainsAText = null
     }
 }

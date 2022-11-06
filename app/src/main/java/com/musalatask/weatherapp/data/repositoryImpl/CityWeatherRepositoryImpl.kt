@@ -77,4 +77,7 @@ class CityWeatherRepositoryImpl @Inject constructor(
             localDataSource.insertCityWeather(cityWeather)
         }
     }
+
+    override fun getCityWeathersByText(text: String): Flow<List<CityWeather>> =
+        localDataSource.getCityWeathersByText(text)
 }

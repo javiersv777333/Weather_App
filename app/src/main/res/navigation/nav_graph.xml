@@ -16,5 +16,6 @@
     <fragment
         android:id="@+id/myCitiesFragment"
         android:name="com.musalatask.weatherapp.presentation.ui.myCities.MyCitiesFragment"
+        android:label="My Cities"
         tools:layout="@layout/fragment_my_cities" />
 </navigation>

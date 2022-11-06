@@ -35,6 +35,19 @@ class CityWeatherLocalDataSourceImpl @Inject constructor(
         }
     }
 
+    override fun getCityWeathersByText(text: String): Flow<List<CityWeather>> {
+        val lowerCaseText = text.lowercase()
+        return getAllCityWeathers().map {
+            it.filter {
+                it.cityName.lowercase()
+                    .contains(lowerCaseText) || it.coordinatesName != null && it.coordinatesName!!.lowercase()
+                    .contains(
+                        lowerCaseText
+                    )
+            }
+        }
+    }
+
     override suspend fun <R> withTransaction(block: suspend () -> R): R =
         db.withTransaction(block)
 

@@ -23,11 +23,10 @@ class MyCitiesAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CityViewHolder {
         val view =
             LayoutInflater.from(parent.context).inflate(R.layout.view_holder_city, parent, false)
-        return CityViewHolder(deleteAction = deleteAction, view = view)
+        return CityViewHolder(deleteAction = deleteAction, selectAction = selectAction, view = view)
     }
 
     override fun onBindViewHolder(holder: CityViewHolder, position: Int) {
         holder.bind(getItem(position))
-        holder.itemView.setOnClickListener { selectAction.invoke(getItem(position)) }
     }
 }

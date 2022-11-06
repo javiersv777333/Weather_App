@@ -1,29 +1,20 @@
 package com.musalatask.weatherapp.presentation.ui.cityWeather
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
 import android.os.Bundle
 import android.os.Looper
 import android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS
-import android.util.Log.d
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.view.inputmethod.InputMethodManager
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.core.view.isVisible
 import androidx.lifecycle.*
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -49,9 +40,13 @@ import java.util.concurrent.TimeUnit
 class CityWeatherActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var searchMenuItem: MenuItem
+    private var searchMenuItem: MenuItem? = null
+    lateinit var selectOneCityMenuItem: MenuItem
     private lateinit var binding: ActivityCityWeatherBinding
     private lateinit var viewModel: CityWeatherViewModel
+
+    var requestCitiesWishContainsAText: ((text: String) -> Unit)? = null
+    var submitTextForSearch: ((text: String) -> Unit)? = null
 
     // FusedLocationProviderClient - Main class for receiving location updates.
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -93,7 +88,7 @@ class CityWeatherActivity : AppCompatActivity() {
                     .distinctUntilChanged()
                     .collect {
                         supportActionBar?.title = it
-                        searchMenuItem.collapseActionView()
+                        collapseSearchView()
                     }
             }
         }
@@ -102,11 +97,12 @@ class CityWeatherActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        //Observe the result to be set by Fragment B in the stateHandle of the currentBackStackEntry
+        //Observe the result to be set by MyCitiesFragment in the stateHandle of the currentBackStackEntry
         val currentBackStackEntry = findNavController(R.id.nav_host_fragment_content_main).currentBackStackEntry
         val savedStateHandle = currentBackStackEntry?.savedStateHandle
         savedStateHandle?.getLiveData<String>(Constants.SELECTED_CITY_KEY)
             ?.observe(currentBackStackEntry, Observer { result ->
+                supportActionBar?.title = result
                 viewModel.getCityWeatherByName(result)
             })
     }
@@ -274,19 +270,23 @@ class CityWeatherActivity : AppCompatActivity() {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
         searchMenuItem = menu.findItem(R.id.action_search)
-        val searchView = searchMenuItem.actionView as SearchView
+        selectOneCityMenuItem = menu.findItem(R.id.action_pick)
+        if(!viewModel.isSelectCityMenuItemVisible) selectOneCityMenuItem.isVisible = false
+        val searchView = searchMenuItem!!.actionView as SearchView
         searchView.queryHint = "Type a city name"
 
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let {
-                    viewModel.getCityWeatherByName(it)
-                    ActivityUtils.hideKeyBoard(this@CityWeatherActivity)
+                    submitTextForSearch?.let { it1 -> it1(it) }
                 }
                 return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
+                requestCitiesWishContainsAText?.let {
+                    newText?.let { it1 -> it(it1) }
+                }
                 return true
             }
         })
@@ -304,13 +304,22 @@ class CityWeatherActivity : AppCompatActivity() {
     private fun navigateToMyCitiesFragment(){
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         navController.navigate(R.id.action_CityWeatherFragment_to_myCitiesFragment)
-
+        selectOneCityMenuItem.isVisible = false
+        viewModel.isSelectCityMenuItemVisible = false
     }
 
     override fun onSupportNavigateUp(): Boolean {
+        collapseSearchView()
+        supportActionBar?.title = viewModel.lastSuccessCityName
+        selectOneCityMenuItem.isVisible = true
+        viewModel.isSelectCityMenuItemVisible = true
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration)
                 || super.onSupportNavigateUp()
+    }
+
+    fun collapseSearchView(){
+        searchMenuItem?.collapseActionView()
     }
 
     override fun onDestroy() {

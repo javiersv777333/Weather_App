@@ -76,6 +76,14 @@ class CityWeatherFragment : Fragment() {
         binding.refresh.setOnRefreshListener { viewModel.refreshWeather() }
     }
 
+    override fun onResume() {
+        super.onResume()
+        (requireActivity() as CityWeatherActivity).submitTextForSearch = {
+            viewModel.getCityWeatherByName(it)
+            ActivityUtils.hideKeyBoard(requireActivity())
+        }
+    }
+
     private fun setUi(state: CityWeatherUiState) {
         if (state.isLoading) {
             binding.progressBar.visibility = View.VISIBLE

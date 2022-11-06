@@ -35,7 +35,11 @@ class CityWeatherViewModel @Inject constructor(
 
     private var lastUpdateDateTime: DateTime? = null
 
-    private var lastSuccessCityName: String? = null
+    private var _lastSuccessCityName: String? = null
+    val lastSuccessCityName: String?
+        get() = _lastSuccessCityName
+
+    var isSelectCityMenuItemVisible = true
 
     init {
         viewModelScope.launch {
@@ -101,7 +105,7 @@ class CityWeatherViewModel @Inject constructor(
         }
         lastUpdateDateTime = resource.data?.lastUpdated?.let { DateTime(it) }
         _lastUpdate.update { DateTimeUtils.getElapseTime(lastUpdateDateTime!!) }
-        lastSuccessCityName = resource.data?.cityName
+        _lastSuccessCityName = resource.data?.cityName
     }
 
     private fun updateUiStateFromLoadingResource(resource: Resource.Loading<CityWeather?>) {
@@ -128,7 +132,7 @@ class CityWeatherViewModel @Inject constructor(
 
     fun refreshWeather() {
         searchWeatherCityJob?.cancel()
-        lastSuccessCityName?.let {
+        _lastSuccessCityName?.let {
             searchWeatherCityJob = viewModelScope.launch {
                 getCityWeatherByName(it)
             }

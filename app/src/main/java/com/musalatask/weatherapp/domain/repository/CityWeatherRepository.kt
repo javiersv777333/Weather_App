@@ -10,4 +10,5 @@ interface CityWeatherRepository {
     fun getCityWeather(latitude: Double, longitude: Double): Flow<Resource<CityWeather?>>
     fun getAllCityWeathers() : Flow<List<CityWeather>>
     suspend fun deleteCityWeather(cityName: String)
+    fun getCityWeathersByText(text: String): Flow<List<CityWeather>>
 }

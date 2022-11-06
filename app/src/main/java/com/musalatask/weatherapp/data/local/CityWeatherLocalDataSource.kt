@@ -9,5 +9,7 @@ interface CityWeatherLocalDataSource {
     suspend fun insertCityWeather(cityWeather: CityWeather)
     fun getAllCityWeathers(): Flow<List<CityWeather>>
     suspend fun deleteCityWeather(cityName: String)
+    fun getCityWeathersByText(text: String): Flow<List<CityWeather>>
+
     suspend fun <R> withTransaction(block: suspend () -> R): R
 }
