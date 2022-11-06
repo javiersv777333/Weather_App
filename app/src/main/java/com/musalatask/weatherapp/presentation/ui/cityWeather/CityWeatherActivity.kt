@@ -101,6 +101,7 @@ class CityWeatherActivity : AppCompatActivity() {
     private fun checkConnectionToStartRequestingLocation() {
         if (!ConnectivityUtils.hasNetworkAvailable(this)) {
             performWorkToWaitingForConnection { checkForLocationPermission() }
+            notifyThereIsNotConnection()
         } else {
             checkForLocationPermission()
         }
@@ -250,6 +251,10 @@ class CityWeatherActivity : AppCompatActivity() {
                 Looper.getMainLooper()
             )
         }
+    }
+
+    private fun notifyThereIsNotConnection(){
+        ActivityUtils.showSnackBar(message = "You don't have connection for requesting the weather.", view = binding.root)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

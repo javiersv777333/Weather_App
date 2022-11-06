@@ -100,7 +100,8 @@ class CityWeatherFragment : Fragment() {
             showError(state.errorMessage)
             binding.progressBar.visibility = View.INVISIBLE
             binding.refresh.isRefreshing = false
-        } else if (state.cityWeather != null) {
+        }
+        if (state.cityWeather != null) {
 
             binding.empty.visibility = View.GONE
             setImagesVisibility(View.VISIBLE)
