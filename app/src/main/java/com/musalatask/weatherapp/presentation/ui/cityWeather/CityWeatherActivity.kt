@@ -103,6 +103,7 @@ class CityWeatherActivity : AppCompatActivity() {
         savedStateHandle?.getLiveData<String>(Constants.SELECTED_CITY_KEY)
             ?.observe(currentBackStackEntry, Observer { result ->
                 supportActionBar?.title = result
+                viewModel.isSelectCityMenuItemVisible = true
                 viewModel.getCityWeatherByName(result)
             })
     }
@@ -271,7 +272,7 @@ class CityWeatherActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.main, menu)
         searchMenuItem = menu.findItem(R.id.action_search)
         selectOneCityMenuItem = menu.findItem(R.id.action_pick)
-        if(!viewModel.isSelectCityMenuItemVisible) selectOneCityMenuItem.isVisible = false
+        selectOneCityMenuItem.isVisible = viewModel.isSelectCityMenuItemVisible
         val searchView = searchMenuItem!!.actionView as SearchView
         searchView.queryHint = "Type a city name"
 
@@ -311,7 +312,6 @@ class CityWeatherActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         collapseSearchView()
         supportActionBar?.title = viewModel.lastSuccessCityName
-        selectOneCityMenuItem.isVisible = true
         viewModel.isSelectCityMenuItemVisible = true
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration)

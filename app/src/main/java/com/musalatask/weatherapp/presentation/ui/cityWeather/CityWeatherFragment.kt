@@ -23,6 +23,8 @@ import com.musalatask.weatherapp.framework.utils.DateTimeUtils
 import com.nguyencse.URLEmbeddedTask
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import org.joda.time.DateTime
+import org.joda.time.DateTimeZone
 
 
 @AndroidEntryPoint
@@ -141,8 +143,8 @@ class CityWeatherFragment : Fragment() {
                     binding.snow.text = "last hour: $snowVolumeLastHour mm"
                     binding.imageView7.visibility = View.VISIBLE
                 } else binding.imageView7.visibility = View.INVISIBLE
-                binding.sunset.text = "Sunset: ${DateTimeUtils.formatTime(sunset * 1000L)}"
-                binding.sunrise.text = "Sunrise: ${DateTimeUtils.formatTime(sunrise * 1000L)}"
+                binding.sunset.text = "Sunset: ${DateTimeUtils.formatTime((sunset + timezone) * 1000L)}"
+                binding.sunrise.text = "Sunrise: ${DateTimeUtils.formatTime((sunrise + timezone) * 1000L)}"
 
                 binding.map.setOnClickListener {
                     val url = "https://openweathermap.org/weathermap?basemap=map&cities=false&layer=clouds&lat=$latitude&lon=$longitude&zoom=3"
