@@ -29,7 +29,7 @@ class DeleteCityTest {
     }
 
     @Test
-    fun test() = runBlocking {
+    fun delete_city_correct_use_case() = runBlocking {
 
         assertTrue("Initial count of items in GeocodingRepository is 4",
             fakeGeocodingRepository.coordinates.size == 4)
