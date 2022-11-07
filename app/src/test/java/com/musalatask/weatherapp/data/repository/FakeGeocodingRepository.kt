@@ -14,7 +14,7 @@ class FakeGeocodingRepository : GeocodingRepository {
         return flow {
             val coordinates = coordinates.find { it.cityName == cityName }
             emit(
-                if (coordinates == null) Resource.Error("There is no result than match")
+                if (coordinates == null) Resource.Error(6)
                 else Resource.Success(coordinates)
             )
         }
@@ -27,7 +27,7 @@ class FakeGeocodingRepository : GeocodingRepository {
         return flow {
             val coordinates = coordinates.find { it.latitude == latitude && it.longitude == longitude }
             emit(
-                if (coordinates == null) Resource.Error("There is no result than match")
+                if (coordinates == null) Resource.Error(6)
                 else Resource.Success(coordinates)
             )
         }

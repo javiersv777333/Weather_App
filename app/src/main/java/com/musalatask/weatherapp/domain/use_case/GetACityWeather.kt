@@ -6,6 +6,10 @@ import com.musalatask.weatherapp.domain.repository.CityWeatherRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
+/**
+ * Use case that has the business logic related when a user wants to get the weather
+ * of a city entering its name ([cityName])
+ */
 class GetACityWeather(private val cityWeatherRepository: CityWeatherRepository) {
 
     operator fun invoke(cityName: String): Flow<Resource<CityWeather?>> =
