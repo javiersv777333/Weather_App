@@ -5,6 +5,11 @@ import com.musalatask.weatherapp.data.model.CityWeather
 import com.musalatask.weatherapp.domain.repository.CityWeatherRepository
 import kotlinx.coroutines.flow.Flow
 
+/**
+ * Use case that has the business logic related with requesting the weather by its geographical
+ * coordinates ([latitue] and [longitude])and is executed when a user launch the app
+ *
+ */
 class GetMyCurrentCityWeather(private val cityWeatherRepository: CityWeatherRepository) {
 
     operator fun invoke(
