@@ -4,6 +4,13 @@ import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import com.musalatask.weatherapp.databinding.ViewHolderCityBinding
 
+/**
+ * ViewHolder used to populate the recycler view of cities screen.
+ *
+ * @param[deleteAction] action to execute if the user touch the remove
+ * icon.
+ * @param[selectAction] action to execute if the user select a city.
+ */
 class CityViewHolder(
     val deleteAction: (String) -> Unit, view: View,
     private val selectAction: (String) -> Unit

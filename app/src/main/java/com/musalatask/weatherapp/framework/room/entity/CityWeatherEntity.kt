@@ -29,10 +29,13 @@ data class CityWeatherEntity(
     @ColumnInfo(name = "latitude") val latitude: Double,
     @ColumnInfo(name = "longitude") val longitude: Double,
     @ColumnInfo(name = "coordinates_name") var coordinatesName: String? //This variable is needed
-    // because a city weather name can be different than its coordinates name, and for finding in
-    // database a common name should be use, this variable will be that common name.
+    // because a city weather name can be different than its coordinates name, for that, this
+    // variable and "cityName" will be used to request data from database.
 )
 
+/**
+ * Map a room city weather entity object into a city weather model object.
+ */
 fun CityWeatherEntity.toCityWeather(): CityWeather =
     CityWeather(
         description = description,

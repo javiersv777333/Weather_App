@@ -8,6 +8,9 @@ data class Coordinates(
     val cityName: String
 )
 
+/**
+ * Map a coordinates model object into a room coordinates entity object.
+ */
 fun Coordinates.toCoordinatesEntity(): CoordinatesEntity =
     CoordinatesEntity(
         latitude = latitude,

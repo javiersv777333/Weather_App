@@ -17,23 +17,20 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
+import com.musalatask.weatherapp.R
 import com.musalatask.weatherapp.databinding.FragmentCityWeatherBinding
 import com.musalatask.weatherapp.framework.utils.ActivityUtils
 import com.musalatask.weatherapp.framework.utils.DateTimeUtils
-import com.nguyencse.URLEmbeddedTask
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import org.joda.time.DateTime
-import org.joda.time.DateTimeZone
 
-
+/**
+ * This fragment show to the user a specified city weather info.
+ */
 @AndroidEntryPoint
 class CityWeatherFragment : Fragment() {
 
     private var _binding: FragmentCityWeatherBinding? = null
-
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
 
     private lateinit var viewModel: CityWeatherViewModel
@@ -55,7 +52,7 @@ class CityWeatherFragment : Fragment() {
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.currentTime.collect {
-                    binding.currentDate.text = it
+                    binding.currentDate.text = it//Display the current time.
                 }
             }
         }
@@ -64,7 +61,7 @@ class CityWeatherFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.lastUpdate.collect {
                     if (it.isNotEmpty())
-                        binding.elapseTime.text = "Last update: $it"
+                        binding.elapseTime.text = getString(R.string.last_update_label) + it
                 }
             }
         }
@@ -72,6 +69,7 @@ class CityWeatherFragment : Fragment() {
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect {
+                    //A new ui state request the invalidation of the screen.
                     setUi(it)
                 }
             }
@@ -82,41 +80,69 @@ class CityWeatherFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+
+        //Set the correct search logic for text submitted in the search view.
         (requireActivity() as CityWeatherActivity).submitTextForSearch = {
             viewModel.getCityWeatherByName(it)
             ActivityUtils.hideKeyBoard(requireActivity())
         }
     }
 
+    /**
+     * This transform the given ui state in a new visual representation and apply it.
+     *
+     * @param[state] the ui state to represent.
+     */
     private fun setUi(state: CityWeatherUiState) {
+        setUiByLoadingInfo(state)
+        setUiByErrorInfo(state)
+        setUiByCityWeatherInfo(state)
+    }
+
+    /**
+     * This generate the view representation around loading info by given state.
+     */
+    private fun setUiByLoadingInfo(state: CityWeatherUiState) {
         if (state.isLoading) {
             binding.progressBar.visibility = View.VISIBLE
-            setImagesVisibility(View.INVISIBLE)
+            setWidgetsVisibility(View.INVISIBLE)
             binding.empty.visibility = View.INVISIBLE
             binding.weatherInfo.visibility = View.INVISIBLE
         } else {
             binding.progressBar.visibility = View.INVISIBLE
             binding.refresh.isRefreshing = false
         }
+    }
 
-        if (state.errorMessage != null) {
+    /**
+     * This generate the view representation around error info by given state.
+     */
+    private fun setUiByErrorInfo(state: CityWeatherUiState) {
+        if (state.errorResource != null) {
             if (state.cityWeather == null) {
-                setImagesVisibility(View.INVISIBLE)
+                setWidgetsVisibility(View.INVISIBLE)
                 binding.empty.visibility = View.VISIBLE
                 binding.weatherInfo.visibility = View.INVISIBLE
             } else {
-                setImagesVisibility(View.VISIBLE)
+                setWidgetsVisibility(View.VISIBLE)
                 binding.empty.visibility = View.INVISIBLE
                 binding.weatherInfo.visibility = View.VISIBLE
             }
-            showError(state.errorMessage)
+            showError(state.errorResource)
             binding.progressBar.visibility = View.INVISIBLE
             binding.refresh.isRefreshing = false
         }
-        if (state.cityWeather != null) {
+    }
 
+    /**
+     * This generate the view representation around city weather model info by given state.
+     *
+     * @param[state] the new ui state.
+     */
+    private fun setUiByCityWeatherInfo(state: CityWeatherUiState) {
+        if (state.cityWeather != null) {
             binding.empty.visibility = View.GONE
-            setImagesVisibility(View.VISIBLE)
+            setWidgetsVisibility(View.VISIBLE)
             binding.weatherInfo.visibility = View.VISIBLE
 
             with(state.cityWeather) {
@@ -126,28 +152,31 @@ class CityWeatherFragment : Fragment() {
                 )
                 binding.description.text = description
                 binding.temp.text = "${(temp - 273.15).toInt()}"
-                binding.metricsUnit.text = "ºC"
-                binding.maxTemp.text = "${(tempMax - 273.15).toInt()}ºC"
-                binding.minTemp.text = "${(tempMin - 273.15).toInt()}ºC"
-                binding.humidity.text = "Humidity: $humidity%"
-                binding.feelsLike.text = "Feels like: ${(feelsLike - 273.15).toInt()}ºC"
+                binding.metricsUnit.text = getString(R.string.celsius_degree)
+                binding.maxTemp.text = "${(tempMax - 273.15).toInt()}${getString(R.string.celsius_degree)}"
+                binding.minTemp.text = "${(tempMin - 273.15).toInt()}${getString(R.string.celsius_degree)}"
+                binding.humidity.text = "${getString(R.string.humidity_label)}$humidity%"
+                binding.feelsLike.text = "${getString(R.string.feels_like_label)}${(feelsLike - 273.15).toInt()}${getString(R.string.celsius_degree)}"
                 if (rainVolumeLastHour != null) {
-                    binding.precipitation.text = "last hour: $rainVolumeLastHour mm"
+                    binding.precipitation.text = "${getString(R.string.last_hour_label)}$rainVolumeLastHour mm"
                     binding.imageView6.visibility = View.VISIBLE
                 } else binding.imageView6.visibility = View.INVISIBLE
                 binding.air.text = "$windSpeed m/s"
                 binding.imageView5.rotation = windDirection.toFloat()
-                binding.visibility.text = "Visibility: $visibility m"
-                binding.pressure.text = "Pressure: $pressure hPa"
+                binding.visibility.text = "${getString(R.string.visibility_label)}$visibility m"
+                binding.pressure.text = "${getString(R.string.pressure_label)}$pressure hPa"
                 if (snowVolumeLastHour != null) {
-                    binding.snow.text = "last hour: $snowVolumeLastHour mm"
+                    binding.snow.text = "${getString(R.string.last_hour_label)}$snowVolumeLastHour mm"
                     binding.imageView7.visibility = View.VISIBLE
                 } else binding.imageView7.visibility = View.INVISIBLE
-                binding.sunset.text = "Sunset: ${DateTimeUtils.formatTime((sunset + timezone) * 1000L)}"
-                binding.sunrise.text = "Sunrise: ${DateTimeUtils.formatTime((sunrise + timezone) * 1000L)}"
+                binding.sunset.text =
+                    "${getString(R.string.sunset_label)}${DateTimeUtils.formatTime((sunset + timezone) * 1000L)}"
+                binding.sunrise.text =
+                    "${getString(R.string.sunrise_label)}${DateTimeUtils.formatTime((sunrise + timezone) * 1000L)}"
 
                 binding.map.setOnClickListener {
-                    val url = "https://openweathermap.org/weathermap?basemap=map&cities=false&layer=clouds&lat=$latitude&lon=$longitude&zoom=3"
+                    val url =
+                        "https://openweathermap.org/weathermap?basemap=map&cities=false&layer=clouds&lat=$latitude&lon=$longitude&zoom=3"
                     val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                     startActivity(browserIntent)
                 }
@@ -156,11 +185,14 @@ class CityWeatherFragment : Fragment() {
         }
     }
 
-    private fun showError(message: String) {
-        ActivityUtils.showSnackBar(message = message, view = binding.root)
+    private fun showError(messageResource: Int) {
+        ActivityUtils.showSnackBar(messageResource = messageResource, view = binding.root)
     }
 
-    private fun setImagesVisibility(visibility: Int) {
+    /**
+     * This is used to show or hide the widgets as consequence of a new ui state.
+     */
+    private fun setWidgetsVisibility(visibility: Int) {
         binding.imageView2.visibility = visibility
         binding.imageView3.visibility = visibility
         binding.imageView4.visibility = visibility
@@ -169,6 +201,7 @@ class CityWeatherFragment : Fragment() {
         binding.imageView7.visibility = visibility
         binding.imageView8.visibility = visibility
         binding.imageView9.visibility = visibility
+        binding.map.visibility = visibility
     }
 
     /**

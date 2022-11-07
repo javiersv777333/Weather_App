@@ -10,6 +10,9 @@ data class CoordinatesDto(
     val state: String
 )
 
+/**
+ * Map a coordinates dto object into a model coordinates object.
+ */
 fun CoordinatesDto.toCoordinates(): Coordinates =
     Coordinates(
         latitude = lat,

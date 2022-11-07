@@ -20,6 +20,9 @@ data class CityWeatherDto(
     val snow: Snow?
 )
 
+/**
+ * Map a city weather dto object into a model city weather object.
+ */
 fun CityWeatherDto.toCityWeather(): CityWeather =
     CityWeather(
         description = if (weather.isNotEmpty()) weather[0].description else null,

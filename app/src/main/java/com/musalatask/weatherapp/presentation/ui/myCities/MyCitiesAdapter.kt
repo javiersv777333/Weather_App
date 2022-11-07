@@ -6,6 +6,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import com.musalatask.weatherapp.R
 
+/**
+ * Adapter used to populate the recycler view of cities screen.
+ *
+ * @param[deleteAction] action to execute if the user touch the remove
+ * icon.
+ * @param[selectAction] action to execute if the user select a city.
+ */
 class MyCitiesAdapter(
     private val deleteAction: (String) -> Unit,
     private val selectAction: (String) -> Unit

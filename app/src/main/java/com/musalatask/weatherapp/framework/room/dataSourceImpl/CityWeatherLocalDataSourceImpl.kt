@@ -1,6 +1,5 @@
 package com.musalatask.weatherapp.framework.room.dataSourceImpl
 
-import android.util.Log
 import androidx.room.withTransaction
 import com.musalatask.weatherapp.data.local.CityWeatherLocalDataSource
 import com.musalatask.weatherapp.data.model.CityWeather

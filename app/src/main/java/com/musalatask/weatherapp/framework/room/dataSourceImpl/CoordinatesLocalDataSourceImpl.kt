@@ -7,16 +7,26 @@ import com.musalatask.weatherapp.data.model.Coordinates
 import com.musalatask.weatherapp.data.model.toCoordinatesEntity
 import com.musalatask.weatherapp.framework.room.db.AppDataBase
 import com.musalatask.weatherapp.framework.room.entity.toCoordinates
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
+/**
+ * A Room implementation for CityWeatherLocalDataSource.
+ *
+ * @param[db] a Room database.
+ */
 class CoordinatesLocalDataSourceImpl @Inject constructor(
     private val db: AppDataBase
 ) : CoordinatesLocalDataSource {
 
+    /**
+     * Get a city coordinates object stored in [db] with a specific name.
+     *
+     * @param[cityName] the name for the city.
+     *
+     * @return a city coordinates object with [cityName] as a name,
+     * null in case that there isn't one with that name.
+     */
     override suspend fun getCoordinatesOfACity(cityName: String): Coordinates? {
-        Log.d("qqqqqqqq", "get $cityName coordinates from db")
         return db.coordinatesDao().findByName(cityName)?.toCoordinates()
     }
 
@@ -25,11 +35,18 @@ class CoordinatesLocalDataSourceImpl @Inject constructor(
     }
 
     override suspend fun deleteCoordinates(cityName: String) {
-        withTransaction {
+        withAsynchronousContext {
             db.coordinatesDao().delete(cityName)
         }
     }
 
-    override suspend fun <R> withTransaction(block: suspend () -> R): R =
+    /**
+     * Function used to execute a block of code with a certain asynchronous treatment.
+     * For this implementation withTransaction(block) function provided by Room was selected
+     * as a asynchronous treatment.
+     *
+     * @param[block] block of code that you want to execute.
+     */
+    override suspend fun <R> withAsynchronousContext(block: suspend () -> R): R =
         db.withTransaction(block)
 }

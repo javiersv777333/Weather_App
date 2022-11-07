@@ -3,7 +3,7 @@ package com.musalatask.weatherapp.common
 /**
  * This class is used to tells the state in which a specific data request is.
  */
-sealed class Resource<T>(var data: T? = null, val message: String? = null) {
+sealed class Resource<T>(var data: T? = null, val messageResource: Int? = null) {
 
     /**
      * The requested data was retrieved successfully.
@@ -13,11 +13,11 @@ sealed class Resource<T>(var data: T? = null, val message: String? = null) {
     /**
      * The request ends with an error.
      *
-     * @param[message] is the error message.
+     * @param[messageResource] is the error resource reference for the real message ex: R.string.error.
      * @param[data] the las successfully data retrieved. This is usefully for caching scenarios,
      * when there are cached data but its updating throw an error.
      */
-    class Error<T>(message: String, data: T? = null): Resource<T>(data, message)
+    class Error<T>(messageResource: Int, data: T? = null): Resource<T>(data, messageResource)
 
     /**
      * The data is requesting.

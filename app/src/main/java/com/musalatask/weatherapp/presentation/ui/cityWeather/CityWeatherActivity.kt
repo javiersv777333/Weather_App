@@ -45,23 +45,35 @@ class CityWeatherActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCityWeatherBinding
     private lateinit var viewModel: CityWeatherViewModel
 
-    var requestCitiesWishContainsAText: ((text: String) -> Unit)? = null
+    //This lambda has the logic of the search view of the appbar when its text be changed.
+    // If the weather screen is visible, its logic will be null, else, if the cities
+    // screen is visible, its logic will be receive the text and filter the cities by it.
+    var requestCitiesWhichContainsAText: ((text: String) -> Unit)? = null
+
+    //This lambda has the logic of the search view of the appbar when its text be submitted.
+    // If the weather screen is visible, its logic will be receive a city name and
+    // request its weather, else, if the cities screen is visible, its logic will be receive
+    // the text and filter the cities by it.
     var submitTextForSearch: ((text: String) -> Unit)? = null
 
     // FusedLocationProviderClient - Main class for receiving location updates.
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var fusedLocationClient: FusedLocationProviderClient? = null
 
     // LocationRequest - Requirements for the location updates, i.e.,
     // how often you should receive updates, the priority, etc.
     private lateinit var locationRequest: LocationRequest
 
-    // LocationListener - Called when FusedLocationProviderClient
+    // LocationCallBack - Called when FusedLocationProviderClient
     // has a new Location
     private lateinit var locationCallback: LocationCallback
 
+    //This variable is use to determine which permissions the system has granted to
+    // your app.
     private lateinit var locationPermissionRequest: ActivityResultLauncher<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        //This is the new way to create a Splash Screen.
         installSplashScreen()
 
         super.onCreate(savedInstanceState)
@@ -74,19 +86,26 @@ class CityWeatherActivity : AppCompatActivity() {
         appBarConfiguration = AppBarConfiguration(navController.graph)
         setupActionBarWithNavController(navController, appBarConfiguration)
 
-        viewModel =
-            ViewModelProvider(this)[CityWeatherViewModel::class.java]
+        viewModel = ViewModelProvider(this)[CityWeatherViewModel::class.java]
 
-        initializeLocationComponents()
-        checkConnectionToStartRequestingLocation()
+        if (viewModel.lastSuccessCityName == null){
+            initializeLocationComponents()
+            checkConnectionToStartRequestingLocation()
+        }//This means that a city weather request doesn't been done, in other case, a
+        // configuration was changed and there is no need to automatically request
+        // the weather.
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState
-                    .filter { !it.isLoading && it.errorMessage == null && it.cityWeather != null }
+                    .filter { !it.isLoading && it.errorResource == null && it.cityWeather != null }
                     .map { it.cityWeather?.cityName }
                     .distinctUntilChanged()
                     .collect {
+
+                        //When the user received a success response about the weather that he
+                        //requested, the name of the city in the response will appear as a
+                        //title of the screen, and the search view will be collapse.
                         supportActionBar?.title = it
                         collapseSearchView()
                     }
@@ -97,19 +116,24 @@ class CityWeatherActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        //Observe the result to be set by MyCitiesFragment in the stateHandle of the currentBackStackEntry
+        //Observe the result to be set by MyCitiesFragment in the stateHandle of the currentBackStackEntry.
+        //This is for get the city which the user chose in MyCitiesFragment and request its weather.
         val currentBackStackEntry = findNavController(R.id.nav_host_fragment_content_main).currentBackStackEntry
         val savedStateHandle = currentBackStackEntry?.savedStateHandle
         savedStateHandle?.getLiveData<String>(Constants.SELECTED_CITY_KEY)
             ?.observe(currentBackStackEntry, Observer { result ->
-                supportActionBar?.title = result
-                viewModel.isSelectCityMenuItemVisible = true
                 viewModel.getCityWeatherByName(result)
             })
     }
 
+    /**
+     * This function is used when the app wants to get the weather of the current
+     * coordinates location of the user, for doing that, internet connection is
+     * needed.
+     */
     private fun checkConnectionToStartRequestingLocation() {
-        if (!ConnectivityUtils.hasNetworkAvailable(this)) {
+        if (!ConnectivityUtils.hasNetworkAvailable(this)) {//There is no internet,
+            //then a work what wait for incoming internet connection will be executed.
             performWorkToWaitingForConnection { checkForLocationPermission() }
             notifyThereIsNotConnection()
         } else {
@@ -117,6 +141,13 @@ class CityWeatherActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * This function execute a WaitForNetworkWorker work that is used to notify when a internet
+     * connection is available.
+     *
+     * @param[actionForWhenConnectionAreAvailable] the logic to execute when a internet connection
+     * is available.
+     */
     private fun performWorkToWaitingForConnection(actionForWhenConnectionAreAvailable: () -> Unit) {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
@@ -131,6 +162,8 @@ class CityWeatherActivity : AppCompatActivity() {
             .getInstance(application)
             .enqueue(waitForNetworkWork)
 
+        //Observe the work state for know when an internet connection is
+        //available.
         lifecycleScope.launch {
             WorkManager
                 .getInstance(application)
@@ -144,6 +177,10 @@ class CityWeatherActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * This initialize all the locations components used for obtain the current coordinates of
+     * the devices.
+     */
     private fun initializeLocationComponents() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -167,13 +204,18 @@ class CityWeatherActivity : AppCompatActivity() {
         }
 
         locationCallback = object : LocationCallback() {
+
+
             override fun onLocationResult(var1: LocationResult) {
                 var1.lastLocation?.let {
                     viewModel.getCurrentCityWeather(
                         latitude = it.latitude,
                         longitude = it.longitude
                     )
-                    fusedLocationClient.removeLocationUpdates(locationCallback)
+
+                    //The current weather was requested, for that, there is no need to
+                    //keep tracking the locations changes.
+                    fusedLocationClient?.removeLocationUpdates(locationCallback)
                 }
             }
         }
@@ -181,20 +223,25 @@ class CityWeatherActivity : AppCompatActivity() {
         locationPermissionRequest =
             registerForActivityResult(ActivityResultContracts.RequestPermission())
             { isGranted: Boolean ->
-                if (isGranted) { // Permission is granted. Continue the action or workflow in your
+                if (isGranted) { // Permission is granted. Continue the action.
                     tryToRequestLocation()
-                } else {
+                } else {//The user denied the location permission, for that, an educational ui
+                    //will be show, to explain the user why that permission is needed.
                     DialogsUtils.createAlertDialog(
                         context = this,
-                        title = "Oops!!!",
-                        message = "Requesting the weather for your current city is unavailable becouse " +
-                                "you don't allow us the access for your current location. You still " +
-                                "can find a specific city weather by its name."
+                        title = getString(R.string.dialog_permission_denied_title),
+                        message = getString(R.string.dialog_need_for_permission_explanation)
                     ).show()
                 }
             }
     }
 
+    /**
+     * This check for ACCESS_COARSE_LOCATION permission in order to request the current coordinates.
+     * If the permission is granted, it can continue with the requesting if the user has the GPS
+     * activate too. If the permission is not granted yet, an ui must show to the user telling
+     * him that he has to make a decision about the permission (grant or denied).
+     */
     private fun checkForLocationPermission() {
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -202,14 +249,13 @@ class CityWeatherActivity : AppCompatActivity() {
             ) == PackageManager.PERMISSION_GRANTED
         ) {
             tryToRequestLocation()
-
         } else if (shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_COARSE_LOCATION)) {
             DialogsUtils.createAlertDialog(
                 context = this,
-                message = "Pipo, hace falta que actives el permiso!",
-                positiveButtonText = "Ok",
+                message = getString(R.string.should_show_request_permission_rationale_message),
+                positiveButtonText = getString(R.string.should_show_request_permission_rationale_message_positive_label),
                 positiveButtonAction = { _, _ -> requestThePermission() },
-                negativeButtonText = "No thanks",
+                negativeButtonText = getString(R.string.should_show_request_permission_rationale_message_negative_label),
                 negativeButtonAction = { _, _ -> }
             ).show()
         } else {
@@ -217,6 +263,9 @@ class CityWeatherActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * This tells the system that handle the permission requesting.
+     */
     private fun requestThePermission() {
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -227,6 +276,12 @@ class CityWeatherActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * This starts the location tracking but, the GPS must be activated for obtain the
+     * coordinates. This function checks that. If GPS is not activate an ui must show
+     * to the user telling him that the GPS is needed if he wants to know the weather
+     * at his position.
+     */
     private fun tryToRequestLocation() {
         requestLocation()
 
@@ -237,25 +292,28 @@ class CityWeatherActivity : AppCompatActivity() {
         if (!mGPS) {
             DialogsUtils.createAlertDialog(
                 context = this,
-                message = "Pipo, hace falta que actives el gps!",
-                positiveButtonText = "Ok",
+                message = getString(R.string.get_gps_dialog_message),
+                positiveButtonText = getString(R.string.get_gps_dialog_positive_label),
                 positiveButtonAction = { _, _ ->
                     val intent = Intent(ACTION_LOCATION_SOURCE_SETTINGS)
                     startActivity(intent)
                 },
-                negativeButtonText = "No thanks",
+                negativeButtonText = getString(R.string.get_gps_dialog_negative_label),
                 negativeButtonAction = { _, _ -> }
             ).show()
         }
     }
 
+    /**
+     * This starts the location tracking.
+     */
     private fun requestLocation() {
         if (ContextCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            fusedLocationClient.requestLocationUpdates(
+            fusedLocationClient?.requestLocationUpdates(
                 locationRequest,
                 locationCallback,
                 Looper.getMainLooper()
@@ -264,18 +322,28 @@ class CityWeatherActivity : AppCompatActivity() {
     }
 
     private fun notifyThereIsNotConnection(){
-        ActivityUtils.showSnackBar(message = "You don't have connection for requesting the weather.", view = binding.root)
+        ActivityUtils.showSnackBar(messageResource = R.string.no_internet_error, view = binding.root)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
         searchMenuItem = menu.findItem(R.id.action_search)
-        selectOneCityMenuItem = menu.findItem(R.id.action_pick)
-        selectOneCityMenuItem.isVisible = viewModel.isSelectCityMenuItemVisible
-        val searchView = searchMenuItem!!.actionView as SearchView
-        searchView.queryHint = "Type a city name"
 
+        selectOneCityMenuItem = menu.findItem(R.id.action_pick)//This menu item must be
+        //visible when city weather screen is showing but must be invisible if it's not.
+
+        selectOneCityMenuItem.isVisible = viewModel.isSelectCityMenuItemVisible
+
+        val searchView = searchMenuItem!!.actionView as SearchView
+        searchView.queryHint = getString(R.string.search_hint)
+
+        setOnQueryTextListener(searchView)
+
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    private fun setOnQueryTextListener(searchView: SearchView){
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let {
@@ -285,14 +353,12 @@ class CityWeatherActivity : AppCompatActivity() {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                requestCitiesWishContainsAText?.let {
+                requestCitiesWhichContainsAText?.let {
                     newText?.let { it1 -> it(it1) }
                 }
                 return true
             }
         })
-
-        return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -305,14 +371,24 @@ class CityWeatherActivity : AppCompatActivity() {
     private fun navigateToMyCitiesFragment(){
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         navController.navigate(R.id.action_CityWeatherFragment_to_myCitiesFragment)
+
+        //When the user goes to cities screen selectOneCityMenuItem must be invisible.
         selectOneCityMenuItem.isVisible = false
-        viewModel.isSelectCityMenuItemVisible = false
+        setSelectCityMenuItemVisibleState(false)
+    }
+
+    /**
+     * This save the current state about selectOneCityMenuItem visibility in a viewModel,
+     * in order that than info survival to changes configuration.
+     */
+    fun setSelectCityMenuItemVisibleState(state: Boolean){
+        viewModel.isSelectCityMenuItemVisible = state
     }
 
     override fun onSupportNavigateUp(): Boolean {
         collapseSearchView()
         supportActionBar?.title = viewModel.lastSuccessCityName
-        viewModel.isSelectCityMenuItemVisible = true
+        setSelectCityMenuItemVisibleState(true)
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration)
                 || super.onSupportNavigateUp()
@@ -324,7 +400,10 @@ class CityWeatherActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        fusedLocationClient.removeLocationUpdates(locationCallback)
-        WorkManager.getInstance(application).cancelAllWork()
+        fusedLocationClient?.removeLocationUpdates(locationCallback)//Stop location tracking
+        //if the user close the app.
+        WorkManager.getInstance(application).cancelAllWork()//WorkManager storage its works, but,
+        //when the app is closed there is no need that for some scenario WorkManage save a WaitForNetworkWorker
+        //instance.
     }
 }

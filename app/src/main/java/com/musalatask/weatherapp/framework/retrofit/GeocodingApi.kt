@@ -4,6 +4,9 @@ import com.musalatask.weatherapp.framework.retrofit.dto.CoordinatesDto
 import retrofit2.http.GET
 import retrofit2.http.Query
 
+/**
+ * An endpoints interface for Retrofit.
+ */
 interface GeocodingApi {
 
     @GET("/geo/1.0/direct?limit=1")

@@ -17,9 +17,9 @@ object ActivityUtils {
         imm.hideSoftInputFromWindow(view?.windowToken, 0)
     }
 
-    fun showSnackBar(message: String, view: View, @BaseTransientBottomBar.Duration duration: Int = Snackbar.LENGTH_LONG){
+    fun showSnackBar(messageResource: Int, view: View, @BaseTransientBottomBar.Duration duration: Int = Snackbar.LENGTH_LONG){
         val snackbar = Snackbar
-            .make(view, message, Snackbar.LENGTH_LONG)
+            .make(view, view.context.getText(messageResource), Snackbar.LENGTH_LONG)
         snackbar.show()
     }
 }

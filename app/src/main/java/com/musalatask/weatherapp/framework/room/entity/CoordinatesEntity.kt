@@ -13,6 +13,9 @@ data class CoordinatesEntity(
     @ColumnInfo(name = "longitude") val longitude: Double
 )
 
+/**
+ * Map a room city coordinates entity object into a city coordinates model object.
+ */
 fun CoordinatesEntity.toCoordinates(): Coordinates =
     Coordinates(
         latitude = latitude,
