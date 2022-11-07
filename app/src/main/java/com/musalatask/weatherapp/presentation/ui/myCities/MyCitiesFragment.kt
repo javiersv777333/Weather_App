@@ -57,12 +57,8 @@ class MyCitiesFragment : Fragment() {
             }
         }
 
-        //Set search view logic for this screen in particular
-        (requireActivity() as CityWeatherActivity).requestCitiesWhichContainsAText = {
-            //Receive the text and filter the cities by it.
-            viewModel.searchByText(it)
-        }
-        (requireActivity() as CityWeatherActivity).submitTextForSearch = {
+        //Set search view logic for this screen in particular.
+        (requireActivity() as CityWeatherActivity).searchCityByTextAction = {
             //Receive the text and filter the cities by it.
             viewModel.searchByText(it)
         }
@@ -74,22 +70,10 @@ class MyCitiesFragment : Fragment() {
      * @param[cityName] the name of the city which the user select.
      */
     private fun selectCity(cityName: String){
-        restoreTheAppBarState(cityName)
-
         //Setting the result in the stateHandle of the previousBackStackEntry before navigating back to CityWeatherFragment
         //will allow CityWeatherFragment to access the result in the stateHandle of its currentBackStackEntry
         val savedStateHandle = findNavController().previousBackStackEntry?.savedStateHandle
         savedStateHandle?.set(Constants.SELECTED_CITY_KEY, cityName)
         findNavController().navigateUp()
-    }
-
-    private fun restoreTheAppBarState(cityName: String){
-        (requireActivity() as CityWeatherActivity).supportActionBar?.title = cityName
-        (requireActivity() as CityWeatherActivity).setSelectCityMenuItemVisibleState(true)
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        (requireActivity() as CityWeatherActivity).requestCitiesWhichContainsAText = null
     }
 }

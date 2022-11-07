@@ -17,5 +17,6 @@ fun CoordinatesDto.toCoordinates(): Coordinates =
     Coordinates(
         latitude = lat,
         longitude = lon,
-        cityName = name
+        cityName = name,
+        names = mutableListOf(name)
     )

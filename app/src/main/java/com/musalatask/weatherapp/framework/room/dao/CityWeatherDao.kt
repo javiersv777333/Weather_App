@@ -13,13 +13,13 @@ interface CityWeatherDao {
     @Query("SELECT * FROM city_weathers ORDER BY cityName")
     fun getAll(): Flow<List<CityWeatherEntity>>
 
-    @Query("SELECT * FROM city_weathers WHERE coordinates_name LIKE :cityName OR cityName LIKE :cityName LIMIT 1")
+    @Query("SELECT * FROM city_weathers WHERE cityName LIKE :cityName LIMIT 1")
     suspend fun findByName(cityName: String): CityWeatherEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(vararg cityWeatherEntities: CityWeatherEntity)
 
-    @Query("DELETE FROM city_weathers WHERE coordinates_name LIKE :cityName OR cityName LIKE :cityName")
+    @Query("DELETE FROM city_weathers WHERE cityName LIKE :cityName")
     suspend fun delete(cityName: String)
 
     @Delete

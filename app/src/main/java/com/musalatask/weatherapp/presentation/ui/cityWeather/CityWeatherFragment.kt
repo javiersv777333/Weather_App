@@ -78,16 +78,6 @@ class CityWeatherFragment : Fragment() {
         binding.refresh.setOnRefreshListener { viewModel.refreshWeather() }
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        //Set the correct search logic for text submitted in the search view.
-        (requireActivity() as CityWeatherActivity).submitTextForSearch = {
-            viewModel.getCityWeatherByName(it)
-            ActivityUtils.hideKeyBoard(requireActivity())
-        }
-    }
-
     /**
      * This transform the given ui state in a new visual representation and apply it.
      *

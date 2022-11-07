@@ -33,6 +33,9 @@ class GeocodingRepositoryImpl @Inject constructor(
             fetch = { remoteDataSource.getCoordinatesOfACity(cityName) },
             saveFetchResult = {
                 localDataSource.withAsynchronousContext {
+                    if (!it.names.contains(cityName))
+                        it.names.add(cityName)//This is used to save the name
+                    //used for the user to find this coordinates.
                     localDataSource.insertCoordinates(it)
                 }
             }

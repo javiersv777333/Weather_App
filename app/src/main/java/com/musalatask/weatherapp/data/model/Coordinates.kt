@@ -5,7 +5,9 @@ import com.musalatask.weatherapp.framework.room.entity.CoordinatesEntity
 data class Coordinates(
     val latitude: Double,
     val longitude: Double,
-    val cityName: String
+    val cityName: String,
+    val names: MutableList<String>//This store the different names that the user used
+    //to search for this coordinates.
 )
 
 /**
@@ -15,5 +17,6 @@ fun Coordinates.toCoordinatesEntity(): CoordinatesEntity =
     CoordinatesEntity(
         latitude = latitude,
         longitude = longitude,
-        cityName = cityName
+        cityName = cityName,
+        names = names
     )

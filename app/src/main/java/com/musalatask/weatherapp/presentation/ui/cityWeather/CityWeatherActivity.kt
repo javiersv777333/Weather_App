@@ -16,6 +16,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.*
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -41,20 +42,23 @@ class CityWeatherActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private var searchMenuItem: MenuItem? = null
-    lateinit var selectOneCityMenuItem: MenuItem
+    private var selectOneCityMenuItem: MenuItem? = null
     private lateinit var binding: ActivityCityWeatherBinding
     private lateinit var viewModel: CityWeatherViewModel
 
     //This lambda has the logic of the search view of the appbar when its text be changed.
     // If the weather screen is visible, its logic will be null, else, if the cities
     // screen is visible, its logic will be receive the text and filter the cities by it.
-    var requestCitiesWhichContainsAText: ((text: String) -> Unit)? = null
+    private var textForSearchChangedAction: ((text: String) -> Unit)? = null
 
     //This lambda has the logic of the search view of the appbar when its text be submitted.
     // If the weather screen is visible, its logic will be receive a city name and
     // request its weather, else, if the cities screen is visible, its logic will be receive
     // the text and filter the cities by it.
-    var submitTextForSearch: ((text: String) -> Unit)? = null
+    private var submitTextForSearchAction: ((text: String) -> Unit)? = null
+
+    //This take a text and filter the cities by it.
+    var searchCityByTextAction: ((text: String) -> Unit)? = null
 
     // FusedLocationProviderClient - Main class for receiving location updates.
     private var fusedLocationClient: FusedLocationProviderClient? = null
@@ -88,12 +92,14 @@ class CityWeatherActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this)[CityWeatherViewModel::class.java]
 
-        if (viewModel.lastSuccessCityName == null){
+        if (viewModel.lastCityNameRequested == null) {
             initializeLocationComponents()
             checkConnectionToStartRequestingLocation()
         }//This means that a city weather request doesn't been done, in other case, a
         // configuration was changed and there is no need to automatically request
         // the weather.
+
+        setDestinationListener(navController)
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -104,13 +110,63 @@ class CityWeatherActivity : AppCompatActivity() {
                     .collect {
 
                         //When the user received a success response about the weather that he
-                        //requested, the name of the city in the response will appear as a
-                        //title of the screen, and the search view will be collapse.
-                        supportActionBar?.title = it
+                        //requested, the search view will be collapse and the title must be set it
+                        //because the found name can be different than the name that the user enter
+                        //in the search.
                         collapseSearchView()
+                        supportActionBar?.title = it
                     }
             }
         }
+    }
+
+    /**
+     * This set the elements that change when the destinations change.
+     */
+    private fun setDestinationListener(navController: NavController){
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.cityWeatherFragment -> setAppBarAndLogicForCityWeatherDestiny()
+                R.id.myCitiesFragment -> setAppBarAndLogicForCitiesDestiny()
+            }
+        }
+    }
+
+    /**
+     * This set all the elements that relate with the city weather screen like the appbar title,
+     * the menu item visibility and the action to do when the user wants to search.
+     */
+    private fun setAppBarAndLogicForCityWeatherDestiny() {
+        //When the user returns to city weather screen selectOneCityMenuItem must be visible
+        //and the title must be set.
+        selectOneCityMenuItem?.isVisible = true
+        setSelectCityMenuItemVisibleState(true)
+        viewModel.lastCityNameRequested?.let { supportActionBar?.title = it }
+
+        //Set the correct search logic for text submitted in the search view.
+        submitTextForSearchAction = {
+            viewModel.getCityWeatherByName(it)
+
+            //The name of the city will appear as a title of the screen.
+            supportActionBar?.title = it
+
+            ActivityUtils.hideKeyBoard(this)
+        }
+        textForSearchChangedAction = null
+    }
+
+    /**
+     * This set all the elements that relate with the cities screen like the menu item visibility
+     * and the action to do when the user wants to search.
+     */
+    private fun setAppBarAndLogicForCitiesDestiny() {
+        //When the user goes to cities screen selectOneCityMenuItem must be invisible.
+        selectOneCityMenuItem?.isVisible = false
+        setSelectCityMenuItemVisibleState(false)
+
+        //Set the correct search logic for text submitted in the search view.
+        submitTextForSearchAction = { searchCityByTextAction?.invoke(it) }
+        textForSearchChangedAction = { searchCityByTextAction?.invoke(it) }
     }
 
     override fun onStart() {
@@ -118,7 +174,8 @@ class CityWeatherActivity : AppCompatActivity() {
 
         //Observe the result to be set by MyCitiesFragment in the stateHandle of the currentBackStackEntry.
         //This is for get the city which the user chose in MyCitiesFragment and request its weather.
-        val currentBackStackEntry = findNavController(R.id.nav_host_fragment_content_main).currentBackStackEntry
+        val currentBackStackEntry =
+            findNavController(R.id.nav_host_fragment_content_main).currentBackStackEntry
         val savedStateHandle = currentBackStackEntry?.savedStateHandle
         savedStateHandle?.getLiveData<String>(Constants.SELECTED_CITY_KEY)
             ?.observe(currentBackStackEntry, Observer { result ->
@@ -321,8 +378,11 @@ class CityWeatherActivity : AppCompatActivity() {
         }
     }
 
-    private fun notifyThereIsNotConnection(){
-        ActivityUtils.showSnackBar(messageResource = R.string.no_internet_error, view = binding.root)
+    private fun notifyThereIsNotConnection() {
+        ActivityUtils.showSnackBar(
+            messageResource = R.string.no_internet_error,
+            view = binding.root
+        )
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -332,8 +392,7 @@ class CityWeatherActivity : AppCompatActivity() {
 
         selectOneCityMenuItem = menu.findItem(R.id.action_pick)//This menu item must be
         //visible when city weather screen is showing but must be invisible if it's not.
-
-        selectOneCityMenuItem.isVisible = viewModel.isSelectCityMenuItemVisible
+        selectOneCityMenuItem?.isVisible = viewModel.isSelectCityMenuItemVisible
 
         val searchView = searchMenuItem!!.actionView as SearchView
         searchView.queryHint = getString(R.string.search_hint)
@@ -343,17 +402,17 @@ class CityWeatherActivity : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
-    private fun setOnQueryTextListener(searchView: SearchView){
+    private fun setOnQueryTextListener(searchView: SearchView) {
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let {
-                    submitTextForSearch?.let { it1 -> it1(it) }
+                    submitTextForSearchAction?.let { it1 -> it1(it) }
                 }
                 return true
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                requestCitiesWhichContainsAText?.let {
+                textForSearchChangedAction?.let {
                     newText?.let { it1 -> it(it1) }
                 }
                 return true
@@ -362,39 +421,32 @@ class CityWeatherActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId){
+        when (item.itemId) {
             R.id.action_pick -> navigateToMyCitiesFragment()
         }
         return super.onOptionsItemSelected(item)
     }
 
-    private fun navigateToMyCitiesFragment(){
+    private fun navigateToMyCitiesFragment() {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         navController.navigate(R.id.action_CityWeatherFragment_to_myCitiesFragment)
-
-        //When the user goes to cities screen selectOneCityMenuItem must be invisible.
-        selectOneCityMenuItem.isVisible = false
-        setSelectCityMenuItemVisibleState(false)
     }
 
     /**
      * This save the current state about selectOneCityMenuItem visibility in a viewModel,
-     * in order that than info survival to changes configuration.
+     * in order that that info survival to changes configuration.
      */
-    fun setSelectCityMenuItemVisibleState(state: Boolean){
+    private fun setSelectCityMenuItemVisibleState(state: Boolean) {
         viewModel.isSelectCityMenuItemVisible = state
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        collapseSearchView()
-        supportActionBar?.title = viewModel.lastSuccessCityName
-        setSelectCityMenuItemVisibleState(true)
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration)
                 || super.onSupportNavigateUp()
     }
 
-    fun collapseSearchView(){
+    fun collapseSearchView() {
         searchMenuItem?.collapseActionView()
     }
 

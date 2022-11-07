@@ -45,10 +45,10 @@ class CityWeatherViewModel @Inject constructor(
 
     private var lastUpdateDateTime: DateTime? = null
 
-    //The name of the last city whose weather was requested successfully.
-    private var _lastSuccessCityName: String? = null
-    val lastSuccessCityName: String?
-        get() = _lastSuccessCityName
+    //The name of the last city whose weather was requested.
+    private var _lastCityNameRequested: String? = null
+    val lastCityNameRequested: String?
+        get() = _lastCityNameRequested
 
     //State of the selectCityMenuItem visibility.
     var isSelectCityMenuItemVisible = true
@@ -94,8 +94,11 @@ class CityWeatherViewModel @Inject constructor(
      *
      * @param[cityName] name of the city which the user wants to know its weather.
      */
-    fun getCityWeatherByName(cityName: String) =
+    fun getCityWeatherByName(cityName: String) {
+        _lastCityNameRequested = cityName//Save the city name that the user wants to request
+        //for the case that the user wants tu refresh the request.
         getCityWeather(cityName = cityName)
+    }
 
     /**
      * For retrieve a city weather, is needed a city name or a latitude and longitude coordinates.
@@ -144,7 +147,7 @@ class CityWeatherViewModel @Inject constructor(
         }
         lastUpdateDateTime = resource.data?.lastUpdated?.let { DateTime(it) }
         _lastUpdate.update { DateTimeUtils.getElapseTime(lastUpdateDateTime!!) }
-        _lastSuccessCityName = resource.data?.cityName
+        _lastCityNameRequested = resource.data?.cityName
     }
 
     /**
@@ -185,7 +188,7 @@ class CityWeatherViewModel @Inject constructor(
      */
     fun refreshWeather() {
         searchWeatherCityJob?.cancel()
-        _lastSuccessCityName?.let {
+        _lastCityNameRequested?.let {
             searchWeatherCityJob = viewModelScope.launch {
                 getCityWeatherByName(it)
             }

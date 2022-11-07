@@ -45,6 +45,5 @@ fun CityWeatherDto.toCityWeather(): CityWeather =
         cityName = name,
         latitude = coord.lat,
         longitude = coord.lon,
-        lastUpdated = null,
-        coordinatesName = null
+        lastUpdated = null
     )

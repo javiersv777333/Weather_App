@@ -128,9 +128,9 @@ class CityWeatherRepositoryImpl @Inject constructor(
         cityWeather.lastUpdated = now //It is needed know the moment when the info was obtained, for the user will
         //have feedback about how old the data is.
 
-        cityWeather.coordinatesName = coordinatesName//Some times the city name of the coordinates object is different
+        cityWeather.cityName = coordinatesName//Some times the city name of the coordinates object is different
         //than the city name of the city weather object resulting, but both pointing to the same, for that, save the
-        //coordinates object name is needed too.
+        //coordinates object name will set it as weather city name.
 
         localDataSource.withAsynchronousContext {
             localDataSource.insertCityWeather(cityWeather)

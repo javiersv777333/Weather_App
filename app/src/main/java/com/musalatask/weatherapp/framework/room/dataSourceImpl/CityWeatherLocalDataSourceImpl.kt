@@ -56,11 +56,7 @@ class CityWeatherLocalDataSourceImpl @Inject constructor(
         val lowerCaseText = text.lowercase()
         return getAllCityWeathers().map { list ->
             list.filter {
-                it.cityName.lowercase().contains(lowerCaseText) ||
-                it.coordinatesName != null && it.coordinatesName!!.lowercase().contains(lowerCaseText)
-                //In some case, the city weather object and the coordinates object related with it
-                //differ in its names but both point to the same, for that the text is searching in
-                //both names.
+                it.cityName.lowercase().contains(lowerCaseText)
             }
         }
     }

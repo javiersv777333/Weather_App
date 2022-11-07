@@ -10,7 +10,9 @@ import com.musalatask.weatherapp.framework.retrofit.dto.CoordinatesDto
 data class CoordinatesEntity(
     @PrimaryKey val cityName: String,
     @ColumnInfo(name = "latitude") val latitude: Double,
-    @ColumnInfo(name = "longitude") val longitude: Double
+    @ColumnInfo(name = "longitude") val longitude: Double,
+    @ColumnInfo(name = "names_for_search") val names: List<String>//This store the different names
+    // that the user used to search for this coordinates.
 )
 
 /**
@@ -20,5 +22,6 @@ fun CoordinatesEntity.toCoordinates(): Coordinates =
     Coordinates(
         latitude = latitude,
         longitude = longitude,
-        cityName = cityName
+        cityName = cityName,
+        names = ArrayList(names)
     )

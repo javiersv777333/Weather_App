@@ -23,11 +23,14 @@ class CoordinatesLocalDataSourceImpl @Inject constructor(
      *
      * @param[cityName] the name for the city.
      *
-     * @return a city coordinates object with [cityName] as a name,
-     * null in case that there isn't one with that name.
+     * @return a city coordinates object with [cityName] as a name or with
+     * names field which contains [cityName], null in case that there isn't one with that name.
      */
     override suspend fun getCoordinatesOfACity(cityName: String): Coordinates? {
-        return db.coordinatesDao().findByName(cityName)?.toCoordinates()
+        return db.coordinatesDao().getAll().filter {
+            cityName.lowercase() == it.cityName.lowercase() ||
+            it.names.map { it.lowercase() }.contains(cityName.lowercase())}
+            .take(1).getOrNull(0)?.toCoordinates()
     }
 
     override suspend fun insertCoordinates(vararg coordinates: Coordinates) {

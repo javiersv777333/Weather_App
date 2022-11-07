@@ -20,13 +20,10 @@ data class CityWeather(
     val sunrise: Int,
     val sunset: Int,
     val timezone: Int,
-    val cityName: String,
+    var cityName: String,
     var lastUpdated: Long?,
     val latitude: Double,
-    val longitude: Double,
-    var coordinatesName: String? //This variable is needed because a city weather name can be different
-    //than its coordinates name, for that, this variable and "cityName" will be used to request data from
-    //database.
+    val longitude: Double
 )
 
 /**
@@ -54,6 +51,5 @@ fun CityWeather.toCityWeatherEntity(): CityWeatherEntity =
         cityName = cityName,
         lastUpdated = lastUpdated,
         latitude = latitude,
-        longitude = longitude,
-        coordinatesName = coordinatesName
+        longitude = longitude
     )
