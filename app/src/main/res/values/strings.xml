@@ -30,5 +30,9 @@
 
     <string name="empty_view_label">Nothing to show.</string>
     <string name="view_more_button_text">View More</string>
+    
+    <string name="cities_fragment_title">My Cities</string>
+    <string name="action_search">Search</string>
+    <string name="pick_a_previous_city_action">Pick a previous city</string>
 
 </resources>

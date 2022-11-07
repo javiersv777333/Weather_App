@@ -6,11 +6,11 @@
         android:icon="@drawable/ic_search"
         app:showAsAction="collapseActionView|ifRoom"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
-        android:title="Search" />
+        android:title="@string/action_search" />
 
     <item
         android:id="@+id/action_pick"
         android:orderInCategory="100"
-        android:title="Pick a earlier city"
+        android:title="@string/pick_a_previous_city_action"
         app:showAsAction="never" />
 </menu>
