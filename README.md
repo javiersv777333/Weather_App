@@ -28,7 +28,7 @@ To build the app, use the gradlew build command or use "Import Project" in Andro
 
 ## Architecture
 
-The implemented architecture is a Clean Architecture which take into account the recommendations laid out in the Guide to App Architecture and take advantages of Jetpack libraries. This architecture is composed by three layers: presentation or UI, domain and data.
+The implemented architecture is a Clean Architecture which take into account the recommendations laid out in the Guide to App Architecture and take advantages of Jetpack libraries. This architecture is composed of three layers: presentation or UI, domain and data.
 
 - UI layer: The role of the UI is to display the application data on the screen and also to serve as the primary point of user interaction. An UDF (Unidirectional Data Flow) is implemented between Fragments and ViewModels. The ViewModel holds and exposes the state to be consumed by the UI, the UI notifies the ViewModel of user events, the ViewModel handles the user actions and updates the state, and the updated state is fed back to the UI to render.
 
