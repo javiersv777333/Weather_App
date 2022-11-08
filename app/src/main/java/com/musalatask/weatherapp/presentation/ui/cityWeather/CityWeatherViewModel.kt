@@ -2,6 +2,7 @@ package com.musalatask.weatherapp.presentation.ui.cityWeather
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.musalatask.weatherapp.R
 import com.musalatask.weatherapp.common.Resource
 import com.musalatask.weatherapp.domain.model.CityWeather
 import com.musalatask.weatherapp.domain.use_case.GetACityWeather
@@ -50,6 +51,8 @@ class CityWeatherViewModel @Inject constructor(
     val lastCityNameRequested: String?
         get() = _lastCityNameRequested
 
+    private var currentGeographicalCoordinates: Pair<Double, Double>? = null
+
     //State of the selectCityMenuItem visibility.
     var isSelectCityMenuItemVisible = true
 
@@ -85,8 +88,10 @@ class CityWeatherViewModel @Inject constructor(
      * @param[latitude] the current latitude of the device.
      * @param[longitude] the current longitude of the device.
      */
-    fun getCurrentCityWeather(latitude: Double, longitude: Double) =
+    fun getCurrentCityWeather(latitude: Double, longitude: Double) {
+        currentGeographicalCoordinates = Pair(latitude, longitude)
         getCityWeather(latitude = latitude, longitude = longitude)
+    }
 
     /**
      * This is a ui action, executed when the user submit a city name to request
@@ -191,6 +196,11 @@ class CityWeatherViewModel @Inject constructor(
         _lastCityNameRequested?.let {
             searchWeatherCityJob = viewModelScope.launch {
                 getCityWeatherByName(it)
+            }
+        } ?: currentGeographicalCoordinates?.let { //This happens when the automatic weather request
+            // fails and the user pull to refresh.
+            searchWeatherCityJob = viewModelScope.launch {
+                getCurrentCityWeather(it.first, it.second)
             }
         }
     }
