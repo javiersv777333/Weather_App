@@ -1,6 +1,6 @@
 # Weather App
 
-Weather App is an android app for cities weather conditions requesting.
+Weather App is an android app for consulting weather conditions.
 
 ## Screenshots
 
