@@ -2,8 +2,8 @@ package com.musalatask.weatherapp.data.utils
 
 import com.musalatask.weatherapp.R
 import com.musalatask.weatherapp.common.Resource
-import com.musalatask.weatherapp.data.model.CityWeather
-import com.musalatask.weatherapp.data.model.Coordinates
+import com.musalatask.weatherapp.domain.model.CityWeather
+import com.musalatask.weatherapp.domain.model.Coordinates
 import kotlinx.coroutines.flow.*
 import retrofit2.HttpException
 import java.io.IOException

@@ -2,8 +2,8 @@ package com.musalatask.weatherapp.framework.room.dataSourceImpl
 
 import androidx.room.withTransaction
 import com.musalatask.weatherapp.data.local.CityWeatherLocalDataSource
-import com.musalatask.weatherapp.data.model.CityWeather
-import com.musalatask.weatherapp.data.model.toCityWeatherEntity
+import com.musalatask.weatherapp.domain.model.CityWeather
+import com.musalatask.weatherapp.domain.model.toCityWeatherEntity
 import com.musalatask.weatherapp.framework.room.db.AppDataBase
 import com.musalatask.weatherapp.framework.room.entity.toCityWeather
 import kotlinx.coroutines.flow.Flow

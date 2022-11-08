@@ -1,10 +1,9 @@
 package com.musalatask.weatherapp.framework.room.dataSourceImpl
 
-import android.util.Log
 import androidx.room.withTransaction
 import com.musalatask.weatherapp.data.local.CoordinatesLocalDataSource
-import com.musalatask.weatherapp.data.model.Coordinates
-import com.musalatask.weatherapp.data.model.toCoordinatesEntity
+import com.musalatask.weatherapp.domain.model.Coordinates
+import com.musalatask.weatherapp.domain.model.toCoordinatesEntity
 import com.musalatask.weatherapp.framework.room.db.AppDataBase
 import com.musalatask.weatherapp.framework.room.entity.toCoordinates
 import javax.inject.Inject

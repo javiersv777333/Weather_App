@@ -1,4 +1,4 @@
-package com.musalatask.weatherapp.data.model
+package com.musalatask.weatherapp.domain.model
 
 import com.musalatask.weatherapp.framework.room.entity.CityWeatherEntity
 

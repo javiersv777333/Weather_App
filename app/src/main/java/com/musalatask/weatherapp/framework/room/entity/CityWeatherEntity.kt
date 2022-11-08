@@ -3,7 +3,7 @@ package com.musalatask.weatherapp.framework.room.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.musalatask.weatherapp.data.model.CityWeather
+import com.musalatask.weatherapp.domain.model.CityWeather
 
 @Entity(tableName = "city_weathers")
 data class CityWeatherEntity(

@@ -1,6 +1,6 @@
 package com.musalatask.weatherapp.framework.retrofit.dto
 
-import com.musalatask.weatherapp.data.model.CityWeather
+import com.musalatask.weatherapp.domain.model.CityWeather
 
 data class CityWeatherDto(
     val base: String?,

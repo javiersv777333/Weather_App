@@ -1,6 +1,6 @@
 package com.musalatask.weatherapp.framework.retrofit.dto
 
-import com.musalatask.weatherapp.data.model.Coordinates
+import com.musalatask.weatherapp.domain.model.Coordinates
 
 data class CoordinatesDto(
     val country: String,

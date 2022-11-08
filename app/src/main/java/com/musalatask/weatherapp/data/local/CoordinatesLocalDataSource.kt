@@ -1,6 +1,6 @@
 package com.musalatask.weatherapp.data.local
 
-import com.musalatask.weatherapp.data.model.Coordinates
+import com.musalatask.weatherapp.domain.model.Coordinates
 
 /**
  * Data source that handle coordinates objects locally .

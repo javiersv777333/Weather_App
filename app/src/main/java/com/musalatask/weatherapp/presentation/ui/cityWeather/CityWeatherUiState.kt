@@ -1,6 +1,6 @@
 package com.musalatask.weatherapp.presentation.ui.cityWeather
 
-import com.musalatask.weatherapp.data.model.CityWeather
+import com.musalatask.weatherapp.domain.model.CityWeather
 
 /**
  * Class which hold the ui state for city weather screen.

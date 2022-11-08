@@ -1,7 +1,7 @@
 package com.musalatask.weatherapp.domain.repository
 
 import com.musalatask.weatherapp.common.Resource
-import com.musalatask.weatherapp.data.model.CityWeather
+import com.musalatask.weatherapp.domain.model.CityWeather
 import kotlinx.coroutines.flow.Flow
 
 interface CityWeatherRepository {

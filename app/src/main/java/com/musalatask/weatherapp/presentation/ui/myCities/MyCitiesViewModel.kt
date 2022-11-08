@@ -2,7 +2,6 @@ package com.musalatask.weatherapp.presentation.ui.myCities
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.room.PrimaryKey
 import com.musalatask.weatherapp.domain.use_case.DeleteCity
 import com.musalatask.weatherapp.domain.use_case.GetCitiesByText
 import com.musalatask.weatherapp.domain.use_case.GetMyCityNames
@@ -30,11 +29,11 @@ class MyCitiesViewModel @Inject constructor(
     private var job: Job? = null
 
     //Flow which emits the updated city list.
-    val items = MutableStateFlow(listOf<String>())
+    val states = MutableStateFlow(MyCitiesUiState())
 
     init {
         job = viewModelScope.launch {
-            items.emitAll(getMyCityNames())
+            states.emitAll(getMyCityNames().map { MyCitiesUiState(it) })
         }
     }
 
@@ -57,7 +56,7 @@ class MyCitiesViewModel @Inject constructor(
     fun searchByText(text: String) {
         job?.cancel()
         job = viewModelScope.launch {
-            items.emitAll(getCitiesByText(text))
+            states.emitAll(getCitiesByText(text).map { MyCitiesUiState(it) })
         }
     }
 }

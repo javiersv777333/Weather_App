@@ -1,6 +1,6 @@
 package com.musalatask.weatherapp.framework.retrofit.dataSourceImpl
 
-import com.musalatask.weatherapp.data.model.CityWeather
+import com.musalatask.weatherapp.domain.model.CityWeather
 import com.musalatask.weatherapp.data.remote.CityWeatherRemoteDataSource
 import com.musalatask.weatherapp.framework.retrofit.CityWeatherApi
 import com.musalatask.weatherapp.framework.retrofit.dto.toCityWeather

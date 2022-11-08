@@ -1,6 +1,6 @@
 package com.musalatask.weatherapp.data.local
 
-import com.musalatask.weatherapp.data.model.CityWeather
+import com.musalatask.weatherapp.domain.model.CityWeather
 import kotlinx.coroutines.flow.Flow
 
 /**

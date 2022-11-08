@@ -50,10 +50,10 @@ class MyCitiesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         lifecycleScope.launch {
-            viewModel.items.collect{
+            viewModel.states.collect{
 
                 //A new list of cities is ready to submit to the adapter.
-                adapter.submitList(it)
+                adapter.submitList(it.cities)
             }
         }
 

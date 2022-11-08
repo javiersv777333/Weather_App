@@ -3,7 +3,7 @@ package com.musalatask.weatherapp.data.repositoryImpl
 import com.musalatask.weatherapp.R
 import com.musalatask.weatherapp.common.Resource
 import com.musalatask.weatherapp.data.local.CoordinatesLocalDataSource
-import com.musalatask.weatherapp.data.model.Coordinates
+import com.musalatask.weatherapp.domain.model.Coordinates
 import com.musalatask.weatherapp.data.remote.CoordinatesRemoteDataSource
 import com.musalatask.weatherapp.data.utils.getNetworkBoundCoordinatesResource
 import com.musalatask.weatherapp.domain.repository.GeocodingRepository

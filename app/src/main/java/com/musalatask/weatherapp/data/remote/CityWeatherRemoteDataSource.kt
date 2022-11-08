@@ -1,6 +1,6 @@
 package com.musalatask.weatherapp.data.remote
 
-import com.musalatask.weatherapp.data.model.CityWeather
+import com.musalatask.weatherapp.domain.model.CityWeather
 
 /**
  * Data source that handle city weather objects remotely .

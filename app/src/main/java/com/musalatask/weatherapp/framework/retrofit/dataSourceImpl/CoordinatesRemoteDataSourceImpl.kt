@@ -1,7 +1,6 @@
 package com.musalatask.weatherapp.framework.retrofit.dataSourceImpl
 
-import android.util.Log
-import com.musalatask.weatherapp.data.model.Coordinates
+import com.musalatask.weatherapp.domain.model.Coordinates
 import com.musalatask.weatherapp.data.remote.CoordinatesRemoteDataSource
 import com.musalatask.weatherapp.framework.retrofit.GeocodingApi
 import com.musalatask.weatherapp.framework.retrofit.dto.toCoordinates

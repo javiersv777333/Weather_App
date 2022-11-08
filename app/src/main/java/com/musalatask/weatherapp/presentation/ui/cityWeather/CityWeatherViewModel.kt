@@ -3,7 +3,7 @@ package com.musalatask.weatherapp.presentation.ui.cityWeather
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.musalatask.weatherapp.common.Resource
-import com.musalatask.weatherapp.data.model.CityWeather
+import com.musalatask.weatherapp.domain.model.CityWeather
 import com.musalatask.weatherapp.domain.use_case.GetACityWeather
 import com.musalatask.weatherapp.domain.use_case.GetMyCurrentCityWeather
 import com.musalatask.weatherapp.framework.utils.DateTimeUtils

@@ -3,8 +3,7 @@ package com.musalatask.weatherapp.framework.room.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.musalatask.weatherapp.data.model.Coordinates
-import com.musalatask.weatherapp.framework.retrofit.dto.CoordinatesDto
+import com.musalatask.weatherapp.domain.model.Coordinates
 
 @Entity(tableName = "coordinates")
 data class CoordinatesEntity(
