@@ -14,7 +14,7 @@ The app displays the current city weather condition and allows the user to searc
 
 ### OpenWeather API key
 
-Weather App use the OpenWeather API to get the desired city weather. To use the API, you will need to obtain a free developer API key. See the OpenWeather API Documentation for instructions.
+Weather App uses the OpenWeather API to get the desired city weather. To use the API, you will need to obtain a free developer API key. See the OpenWeather API Documentation for instructions.
 
 Once you have the key, add this line to the `gradle.properties` file, either in your user home directory (usually `~/.gradle/gradle.properties` on Linux and Mac) or in the project's root folder:
 
