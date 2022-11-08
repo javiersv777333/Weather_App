@@ -22,7 +22,7 @@ Once you have the key, add this line to the `gradle.properties` file, either in 
 
 ## Development Environment
 
-The app was developed using Android Studio Dolphin | 2021.3.1 Patch 1 and use the Gradle build system.
+The app was developed using Android Studio Dolphin | 2021.3.1 Patch 1 and uses the Gradle build system.
 
 To build the app, use the gradlew build command or use "Import Project" in Android Studio.
 
